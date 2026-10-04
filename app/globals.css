@@ -226,6 +226,35 @@ html {
   }
 }
 
+/* Destination bottom sheet (slides up from the bottom, unlike the mobile
+   nav's top-down sheet-in above) and its overlay. Entrance keyframes are
+   motion-safe-gated via Tailwind's `motion-safe:` variant at the call site;
+   the overlay fade is left ungated (a plain opacity change, not a motion
+   trigger). */
+@keyframes bottom-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes bottom-sheet-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes overlay-out {
+  to {
+    opacity: 0;
+  }
+}
+
 /* Hero entrance — the page's one authored moment. Pure CSS so it runs at
    first paint without waiting for hydration. */
 @keyframes hero-rise {
