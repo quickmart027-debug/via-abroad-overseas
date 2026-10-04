@@ -7,6 +7,7 @@ import { Container } from "@/components/ui/container";
 import { Reveal } from "@/components/motion/reveal";
 import { destinations } from "@/data/destinations";
 import { DestinationCard, hasPhoto } from "@/components/sections/destination-card";
+import { DestinationSelector } from "@/components/destinations/destination-selector";
 
 /** Photographed destinations lead as cinematic cards; the rest follow as a
  *  typographic index rather than empty placeholder cards. */
@@ -28,6 +29,20 @@ export default function DestinationsPage() {
         description="Explore popular study destinations. Requirements and policies vary by country and can change — your counsellor will confirm current details for your specific plans."
         breadcrumb={[{ label: "Destinations" }]}
       />
+
+      <section className="bg-surface py-16 md:py-20">
+        <Container>
+          <h2 className="text-balance font-display text-[clamp(1.75rem,3.5vw,2.5rem)] font-semibold text-navy-900">
+            Find your destination.
+          </h2>
+          <p className="mt-3 max-w-2xl text-ink-muted">
+            Tap a country or a chip to preview it — explore all {destinations.length} destinations we support.
+          </p>
+          <div className="mt-8">
+            <DestinationSelector destinations={destinations} />
+          </div>
+        </Container>
+      </section>
 
       <section className="bg-navy-950 py-20 md:py-28">
         <Container>
