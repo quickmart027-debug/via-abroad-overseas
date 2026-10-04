@@ -8,7 +8,7 @@ import { ConsultationForm } from "@/components/forms/consultation-form";
 export const metadata: Metadata = {
   title: "Book Free Consultation",
   description:
-    "Book your free consultation with VIA ABROAD OVERSEAS and take the first step toward studying abroad.",
+    "Book a free, no-obligation consultation with a VIA ABROAD OVERSEAS counsellor.",
   alternates: { canonical: "/book-consultation" },
 };
 
@@ -22,9 +22,8 @@ export default function BookConsultationPage() {
   return (
     <>
       <PageHero
-        eyebrow="Free Consultation"
         title="Book Your Free Consultation"
-        description="Share a few details and a counselor will reach out to schedule your session."
+        description="Share a few details and a counsellor will reach out to schedule your session."
         breadcrumb={[{ label: "Book Consultation" }]}
       />
 

@@ -30,7 +30,7 @@ admin dashboard.
 |---|---|
 | Framework | Next.js (App Router), React, TypeScript (strict) |
 | Styling | Tailwind CSS v4, shadcn/ui-style primitives |
-| Animation | Motion (Framer Motion) |
+| Animation | CSS (scroll-driven animations, progressive enhancement) |
 | Database & Auth | Supabase (PostgreSQL + Auth) |
 | Email | Resend + React Email |
 | Bot protection | Cloudflare Turnstile |

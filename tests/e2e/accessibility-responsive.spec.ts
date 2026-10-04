@@ -39,11 +39,21 @@ test.describe("accessibility and responsive behavior", () => {
     }
   });
 
-  test("the narrow mobile header uses the standard consultation CTA label", async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 812 });
+  test("the compact (tablet) header uses the standard consultation CTA label", async ({ page }) => {
+    // Phones get the bottom quick-contact bar instead of a header CTA, so the
+    // compact header CTA first appears at the md breakpoint.
+    await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto("/");
 
     await expect(page.locator("header").getByRole("link", { name: "Book Free Consultation" })).toBeVisible();
+  });
+
+  test("phones reach the consultation CTA from the quick-contact bar, not the header", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto("/");
+
+    await expect(page.locator("header").getByRole("link", { name: "Book Free Consultation" })).toBeHidden();
+    await expect(page.getByRole("navigation", { name: "Quick contact" }).getByRole("link", { name: /consult/i })).toBeVisible();
   });
 
   test("the skip link moves keyboard focus to the main content", async ({ page }) => {
@@ -111,7 +121,7 @@ test.describe("accessibility and responsive behavior", () => {
     await firstOption.focus();
     await page.keyboard.press("Space");
     await expect(firstOption).toBeChecked();
-    await page.getByRole("button", { name: "Next" }).focus();
+    await page.getByRole("button", { name: "Next", exact: true }).focus();
     await page.keyboard.press("Enter");
     await expect(page.getByRole("radiogroup", { name: "Approximate budget" })).toBeVisible();
   });

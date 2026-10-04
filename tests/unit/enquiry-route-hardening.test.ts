@@ -61,9 +61,9 @@ describe.each(routes)("%s enquiry route", (_name, post, expectedAction) => {
       formRenderedAt: Date.now() - 10_000,
       ...(expectedAction === "contact" ? {
         interestedCountry: "United Kingdom",
-        serviceRequired: "Study Abroad Counseling",
+        serviceRequired: "Study Abroad Counselling",
       } : expectedAction === "consultation" ? {
-        currentQualification: "Undergraduate",
+        currentQualification: "Pursuing bachelor's",
         preferredCountry: "United Kingdom",
       } : {
         educationLevel: "B.Tech",

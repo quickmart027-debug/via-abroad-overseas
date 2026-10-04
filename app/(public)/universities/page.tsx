@@ -15,21 +15,21 @@ export const metadata: Metadata = {
 const points = [
   {
     icon: Compass,
-    title: "Matched to Your Profile",
+    title: "Matched to your profile",
     description:
-      "We shortlist universities and institutions based on your academic profile, budget, and destination preference.",
+      "Your marks, test scores, budget and preferred countries decide the shortlist, not rankings alone.",
   },
   {
     icon: GraduationCap,
-    title: "Across Every Destination We Support",
+    title: "Compared across countries",
     description:
-      "From the UK to Germany, we help you compare options across the countries and courses you are considering.",
+      "See a UK, German or Canadian option side by side on cost, course length and entry requirements.",
   },
   {
     icon: MessageSquareText,
-    title: "Honest Guidance, Always",
+    title: "Honest about fit",
     description:
-      "We will tell you what realistically fits your profile — including where a shortlist needs to change.",
+      "If a university is out of reach or out of budget, we will say so and suggest what to change.",
   },
 ];
 
@@ -37,9 +37,8 @@ export default function UniversitiesPage() {
   return (
     <>
       <PageHero
-        eyebrow="Universities"
-        title="Find Your Place in the World"
-        description="We help shortlist universities and institutions based on your academic profile, goals, budget, and preferred destination."
+        title="Universities that fit you"
+        description="Explore universities and institutions that match your ambitions, shortlisted around your profile and budget."
         breadcrumb={[{ label: "Universities" }]}
       />
 
@@ -71,8 +70,8 @@ export default function UniversitiesPage() {
       </section>
 
       <ConsultationCtaBanner
-        title="Find My University"
-        description="Tell us your profile and goals — we'll help you shortlist universities that genuinely fit."
+        title="Get your university shortlist"
+        description="Share your marks, budget and preferred countries, and a counsellor will build your first shortlist with you."
         source="universities_page"
       />
     </>

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Manrope, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
-import { AnalyticsProvider } from "@/components/analytics/analytics-provider";
 import { OrganizationJsonLd } from "@/components/seo/organization-jsonld";
 import { Toaster } from "@/components/ui/toaster";
 import { SkipToContent } from "@/components/navigation/skip-to-content";
@@ -28,21 +27,21 @@ export const metadata: Metadata = {
     template: `%s | ${business.name}`,
   },
   description:
-    "VIA ABROAD OVERSEAS helps students achieve their study abroad goals with expert counseling, university admissions support, visa assistance, and career guidance.",
+    "Study abroad consultancy in Nizampet, Hyderabad. Help choosing a country, course and university, with applications, visas and career planning. First consultation free.",
   keywords: [
     "study abroad consultancy",
     "overseas education",
     "study abroad Hyderabad",
     "student visa assistance",
     "university admissions",
-    "career counseling",
+    "career counselling",
   ],
   openGraph: {
     type: "website",
     siteName: business.name,
     title: `${business.name} — Study Abroad & Overseas Education Consultancy`,
     description:
-      "Personalized guidance from course selection to pre-departure support for students planning to study abroad.",
+      "Personalised guidance from course selection to pre-departure support for students planning to study abroad.",
     url: siteUrl,
     locale: "en_IN",
   },
@@ -50,7 +49,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${business.name} — Study Abroad & Overseas Education Consultancy`,
     description:
-      "Personalized guidance from course selection to pre-departure support for students planning to study abroad.",
+      "Personalised guidance from course selection to pre-departure support for students planning to study abroad.",
   },
   robots: {
     index: true,
@@ -73,7 +72,6 @@ export default function RootLayout({
         <OrganizationJsonLd />
         <SkipToContent />
         {children}
-        <AnalyticsProvider />
         <Toaster />
       </body>
     </html>

@@ -1,26 +1,23 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { Eyebrow } from "@/components/ui/eyebrow";
 import { Reveal } from "@/components/motion/reveal";
 import { getFeaturedDestinations } from "@/data/destinations";
+import { DestinationCard, hasPhoto } from "@/components/sections/destination-card";
 
 export function DestinationsSection() {
-  const destinations = getFeaturedDestinations();
+  const destinations = getFeaturedDestinations().filter(hasPhoto);
 
   return (
     <section className="bg-navy-950 py-20 text-white md:py-28">
       <Container>
         <Reveal className="max-w-2xl">
-          <Eyebrow light>Where You Could Study</Eyebrow>
-          <h2 className="mt-4 text-balance font-display text-[clamp(1.75rem,3.5vw,2.75rem)] font-semibold">
-            Study Around the World
+          <h2 className="text-balance font-display text-[clamp(1.75rem,3.5vw,2.75rem)] font-semibold">
+            Your world starts here.
           </h2>
-          <p className="mt-4 text-white/65">
-            Explore popular study destinations. Requirements and policies vary
-            and can change — your counselor will confirm current details for
-            your specific plans.
+          <p className="mt-4 text-lg text-white/75">
+            Explore destinations that combine world-class education, career
+            opportunities and global exposure.
           </p>
         </Reveal>
 
@@ -31,50 +28,10 @@ export function DestinationsSection() {
               delay={(index % 4) * 0.06}
               className="min-w-[78%] snap-start sm:min-w-[45%] md:min-w-0"
             >
-              <Link
-                href={`/destinations/${destination.slug}`}
-                className="group relative flex h-full min-h-[220px] flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-navy-800 to-navy-900 p-6 transition-colors duration-300 hover:border-gold-400/50"
-              >
-                {destination.imageSrc ? (
-                  <>
-                    <Image
-                      src={destination.imageSrc}
-                      alt={destination.imageAlt ?? destination.name}
-                      fill
-                      sizes="(min-width: 1024px) 23vw, (min-width: 768px) 30vw, 78vw"
-                      style={{ objectPosition: destination.imageObjectPosition ?? "center" }}
-                      className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                    />
-                    <div
-                      className="absolute inset-0 bg-gradient-to-t from-navy-950/95 via-navy-950/55 to-navy-950/15"
-                      aria-hidden="true"
-                    />
-                  </>
-                ) : (
-                  <div
-                    className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gold-500/10 blur-2xl transition-opacity duration-300 group-hover:opacity-100 opacity-60"
-                    aria-hidden="true"
-                  />
-                )}
-                <div className="relative z-10">
-                  <span
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 text-sm"
-                    aria-hidden="true"
-                  >
-                    {destination.flag}
-                  </span>
-                  <h3 className="mt-4 font-display text-xl font-semibold">
-                    {destination.name}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-white/70">
-                    {destination.tagline}
-                  </p>
-                </div>
-                <span className="relative z-10 mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-gold-300">
-                  Explore {destination.name}
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
-                </span>
-              </Link>
+              <DestinationCard
+                destination={destination}
+                sizes="(min-width: 1024px) 23vw, (min-width: 768px) 30vw, 78vw"
+              />
             </Reveal>
           ))}
         </div>

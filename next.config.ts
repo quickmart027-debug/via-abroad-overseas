@@ -3,6 +3,14 @@ import type { NextConfig } from "next";
 const isProd = process.env.NODE_ENV === "production";
 
 /**
+ * Only force HTTPS sub-resources on a real HTTPS deployment. On plain
+ * http://localhost, Safari honours `upgrade-insecure-requests` and rewrites
+ * every CSS/JS/image request to https://localhost, which has no server, so
+ * the page renders unstyled. (Chrome exempts localhost, which hides this.)
+ */
+const isDeployed = isProd && Boolean(process.env.VERCEL);
+
+/**
  * Documented third-party origins required by this application:
  *  - challenges.cloudflare.com  → Turnstile bot-protection widget (script + frame)
  *  - www.googletagmanager.com   → GA4 loader script
@@ -26,7 +34,7 @@ const csp = [
   `font-src 'self' data:`,
   `connect-src 'self' https://challenges.cloudflare.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://*.supabase.co wss://*.supabase.co`,
   `form-action 'self'`,
-  `upgrade-insecure-requests`,
+  ...(isDeployed ? [`upgrade-insecure-requests`] : []),
 ].join("; ");
 
 const securityHeaders = [
@@ -34,7 +42,7 @@ const securityHeaders = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+    value: "camera=(), microphone=(), geolocation=(), browsing-topics=(), payment=()",
   },
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
   { key: "Content-Security-Policy", value: csp },
@@ -49,6 +57,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   async headers() {
     return [
       {

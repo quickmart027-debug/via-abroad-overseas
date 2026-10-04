@@ -36,25 +36,67 @@ Production model: **Vercel** (app) + **Supabase** (database/auth) +
 
 ## 3. Resend (Email)
 
-1. Create a Resend account and API key.
-2. Add and verify your sending domain (e.g. `viaabroadoverseas.com`):
-   add the **SPF**, **DKIM**, and **DMARC** DNS records Resend provides
-   under **Domains** in the Resend dashboard.
-3. Set `RESEND_FROM_EMAIL` to a verified address on that domain, e.g.
-   `"VIA ABROAD OVERSEAS <hello@viaabroadoverseas.com>"`.
-4. Set `BUSINESS_NOTIFICATION_EMAIL` to the mailbox that should receive
-   new-enquiry notifications (`viaabroadoverseas@gmail.com` by default).
-5. Send a test enquiry through the deployed contact form and confirm both
-   the business notification and student confirmation emails arrive.
+Email routing is controlled entirely by three server-only env vars — no
+code change is needed to move to a custom domain later.
+
+| Variable | What it does |
+|---|---|
+| `RESEND_API_KEY` | Enables sending. Unset = all emails skipped (leads are still saved). |
+| `BUSINESS_NOTIFICATION_EMAIL` | Inbox(es) that get every new enquiry. Comma-separated list allowed; invalid entries are skipped with a server warning. First address = primary inbox. |
+| `RESEND_FROM_EMAIL` | Sender. `"VIA ABROAD OVERSEAS <enquiries@yourdomain.com>"` or a bare address. |
+
+Behaviour:
+
+- Every business notification has **Reply-To set to the student's
+  email**, so staff can just hit "Reply" in their inbox.
+- The student confirmation email is sent **only** when `RESEND_FROM_EMAIL`
+  is on a real domain (not `resend.dev`). Its Reply-To is the primary
+  business inbox.
+
+### Now (no custom domain yet)
+
+Resend's test sender (`onboarding@resend.dev`) **can only deliver to the
+email address that owns the Resend account.** So today:
+
+1. Create the Resend account **with `viaabroadoverseas@gmail.com`** (or
+   make sure that is the account owner's address) and create an API key.
+2. Set in Vercel (Production):
+   - `RESEND_API_KEY=re_...`
+   - `BUSINESS_NOTIFICATION_EMAIL=viaabroadoverseas@gmail.com`
+   - `RESEND_FROM_EMAIL` — leave unset (or `onboarding@resend.dev`).
+3. Student confirmation emails are skipped in this mode (a log line says
+   so), and the server logs a one-time warning explaining the test-sender
+   limit. Both are expected.
+
+### When you get the domain
+
+1. In Resend → **Domains**, add the domain (e.g. `yourdomain.com`) and add
+   the **SPF**, **DKIM** and **DMARC** DNS records it shows at your DNS
+   provider. Wait until Resend shows the domain as **Verified**.
+2. In Vercel → Project → Settings → Environment Variables (Production):
+   - `RESEND_FROM_EMAIL="VIA ABROAD OVERSEAS <enquiries@yourdomain.com>"`
+   - `BUSINESS_NOTIFICATION_EMAIL=enquiries@yourdomain.com,viaabroadoverseas@gmail.com`
+     (drop the Gmail address if you no longer want copies there)
+   - `NEXT_PUBLIC_SITE_URL=https://yourdomain.com` (also see §7)
+3. **Redeploy** (Deployments → latest → Redeploy). Vercel only applies env
+   changes to new deployments. `NEXT_PUBLIC_SITE_URL` is baked in at build
+   time, so it needs that fresh build; the `RESEND_*` /
+   `BUSINESS_NOTIFICATION_EMAIL` values are server-only and are read when
+   the new deployment runs — no code change or rebuild-time setting.
+4. Submit a test enquiry on the live site and confirm: the notification
+   arrives in every listed inbox, "Reply" addresses the student, and the
+   student confirmation arrives (check spam the first time).
 
 ## 4. Cloudflare Turnstile
 
 1. Create a Turnstile widget in the Cloudflare dashboard.
 2. Restrict it to the canonical production hostname configured by
    `NEXT_PUBLIC_SITE_URL`. Server verification requires an exact hostname
-   match and validates each endpoint's action. Arbitrary Vercel preview
-   hostnames are not accepted for form submissions; use the production
-   hostname for real enquiries.
+   match and validates each endpoint's action. The production deployment
+   never accepts Vercel preview (or any other `*.vercel.app`) hostnames;
+   use the production hostname for real enquiries. A preview deployment
+   accepts only its own `VERCEL_URL` / `VERCEL_BRANCH_URL`, and only if you
+   also add that preview domain to the widget's hostname list in Cloudflare.
 3. Set `NEXT_PUBLIC_TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY`.
 4. Confirm `ALLOW_UNVERIFIED_TURNSTILE_IN_DEV` is **not** set in
    production environment variables.
@@ -134,8 +176,10 @@ production credentials.
 
 - [ ] Home page and all public routes load over HTTPS on the final domain
 - [ ] Contact form submission appears in `/admin/enquiries`
-- [ ] Business notification email received
-- [ ] Student confirmation email received
+- [ ] Business notification email received (in every inbox listed in
+      `BUSINESS_NOTIFICATION_EMAIL`), and "Reply" goes to the student
+- [ ] Student confirmation email received (only once a verified domain is
+      set in `RESEND_FROM_EMAIL` — skipped by design before that)
 - [ ] Admin login works; non-admin Supabase users are correctly denied
 - [ ] `/sitemap.xml` and `/robots.txt` resolve and reference the correct
       domain

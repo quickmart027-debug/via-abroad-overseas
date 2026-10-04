@@ -3,7 +3,6 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "motion/react";
 import { Menu, X, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -74,7 +73,7 @@ export function SiteHeader() {
             <span className="font-display text-lg font-semibold tracking-tight text-white">
               VIA ABROAD <span className="text-gold-400">OVERSEAS</span>
             </span>
-            <span className="hidden text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-gold-300/70 sm:block">
+            <span className="hidden text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-gold-300/70 sm:block">
               Make The Move
             </span>
           </span>
@@ -122,7 +121,8 @@ export function SiteHeader() {
         </div>
 
         <div className="flex items-center gap-2 lg:hidden">
-          <Button asChild size="sm" className="hidden px-4 min-[360px]:inline-flex">
+          {/* Phones use the bottom action bar for this; avoid a second gold CTA. */}
+          <Button asChild size="sm" className="hidden px-4 md:inline-flex">
             <Link href={primaryCta.href}>{primaryCta.label}</Link>
           </Button>
           <button
@@ -139,15 +139,10 @@ export function SiteHeader() {
         </div>
       </div>
 
-      <AnimatePresence>
         {mobileOpen && (
-          <motion.div
+          <div
             id="mobile-nav-sheet"
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            className="max-h-[calc(100vh-4.5rem)] overflow-y-auto border-t border-white/10 bg-navy-900 shadow-xl lg:hidden"
+            className="sheet-in max-h-[calc(100vh-4.5rem)] overflow-y-auto border-t border-white/10 bg-navy-900 shadow-xl lg:hidden"
           >
             <nav aria-label="Mobile" className="container-outer flex flex-col gap-1 py-4">
               {primaryNav.map((link) => {
@@ -180,9 +175,8 @@ export function SiteHeader() {
                 </Button>
               </div>
             </nav>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
     </header>
   );
 }

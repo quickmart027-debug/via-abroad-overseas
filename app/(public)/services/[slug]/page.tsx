@@ -65,7 +65,6 @@ export default async function ServiceDetailPage({
       <FaqJsonLd faq={service.faq} />
       <PageViewTracker event="service_viewed" slug={service.slug} />
       <PageHero
-        eyebrow="Service"
         title={service.title}
         description={service.heroDescription}
         breadcrumb={[{ label: "Services", href: "/services" }, { label: service.title }]}

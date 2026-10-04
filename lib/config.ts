@@ -11,7 +11,7 @@ export const business = {
   name: "VIA ABROAD OVERSEAS",
   shortName: "VIA ABROAD",
   category: "Study Abroad & Overseas Education Consultancy",
-  descriptor: "Study Abroad | Visa Services | Career Counseling",
+  descriptor: "Study Abroad | Visa Services | Career Counselling",
   phoneDisplay: "+91 86399 96069",
   phoneE164: "+918639996069",
   phoneDial: "8639996069",

@@ -1,5 +1,4 @@
 import { Container } from "@/components/ui/container";
-import { Eyebrow } from "@/components/ui/eyebrow";
 import { Reveal } from "@/components/motion/reveal";
 import {
   Accordion,
@@ -13,7 +12,7 @@ const faq = [
   {
     question: "How do I choose the right country?",
     answer:
-      "The right country depends on your course, budget, career goals, and personal preferences. Your counselor will walk through these with you before recommending options.",
+      "The right country depends on your course, budget, career goals, and personal preferences. Your counsellor will walk through these with you before recommending options.",
   },
   {
     question: "How do I choose a university?",
@@ -23,7 +22,7 @@ const faq = [
   {
     question: "What documents are required?",
     answer:
-      "Requirements vary by country, university, and course. Your counselor will give you a checklist specific to your applications once your shortlist is finalized.",
+      "Requirements vary by country, university, and course. Your counsellor will give you a checklist specific to your applications once your shortlist is finalised.",
   },
   {
     question: "Do you help with visas?",
@@ -38,7 +37,7 @@ const faq = [
   {
     question: "How much does studying abroad cost?",
     answer:
-      "Costs vary significantly by country, university, and course, and change over time. Your counselor will walk through a realistic estimate for your specific options during your consultation.",
+      "Costs vary significantly by country, university, and course, and change over time. Your counsellor will walk through a realistic estimate for your specific options during your consultation.",
   },
   {
     question: "Do you provide pre-departure assistance?",
@@ -58,9 +57,8 @@ export function FaqSection() {
       <FaqJsonLd faq={faq} />
       <Container className="max-w-3xl">
         <Reveal className="text-center">
-          <Eyebrow className="justify-center">FAQ</Eyebrow>
-          <h2 className="mt-4 text-balance font-display text-[clamp(1.75rem,3.5vw,2.75rem)] font-semibold text-navy-900">
-            Frequently asked questions
+          <h2 className="text-balance font-display text-[clamp(1.75rem,3.5vw,2.75rem)] font-semibold text-navy-900">
+            Questions? We&rsquo;ve got answers.
           </h2>
         </Reveal>
 

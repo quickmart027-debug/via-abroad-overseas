@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { PageHero } from "@/components/sections/page-hero";
@@ -7,6 +6,12 @@ import { ConsultationCtaBanner } from "@/components/sections/consultation-cta-ba
 import { Container } from "@/components/ui/container";
 import { Reveal } from "@/components/motion/reveal";
 import { destinations } from "@/data/destinations";
+import { DestinationCard, hasPhoto } from "@/components/sections/destination-card";
+
+/** Photographed destinations lead as cinematic cards; the rest follow as a
+ *  typographic index rather than empty placeholder cards. */
+const featured = destinations.filter(hasPhoto);
+const more = destinations.filter((destination) => !hasPhoto(destination));
 
 export const metadata: Metadata = {
   title: "Study Destinations",
@@ -19,64 +24,67 @@ export default function DestinationsPage() {
   return (
     <>
       <PageHero
-        eyebrow="Study Destinations"
-        title="Study Around the World"
-        description="Explore popular study destinations. Requirements and policies vary by country and can change — your counselor will confirm current details for your specific plans."
+        title="Study destinations"
+        description="Explore popular study destinations. Requirements and policies vary by country and can change — your counsellor will confirm current details for your specific plans."
         breadcrumb={[{ label: "Destinations" }]}
       />
 
-      <section className="bg-surface py-20 md:py-28">
-        <Container className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {destinations.map((destination, index) => (
-            <Reveal key={destination.slug} delay={(index % 3) * 0.07}>
-              <Link
-                href={`/destinations/${destination.slug}`}
-                className="group relative flex h-full min-h-[260px] flex-col justify-between overflow-hidden rounded-2xl border border-navy-900/10 bg-gradient-to-br from-navy-800 to-navy-900 p-7 text-white transition-colors duration-300 hover:border-gold-400/50"
-              >
-                {destination.imageSrc ? (
-                  <>
-                    <Image
-                      src={destination.imageSrc}
-                      alt={destination.imageAlt ?? destination.name}
-                      fill
-                      sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"
-                      style={{ objectPosition: destination.imageObjectPosition ?? "center" }}
-                      className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                    />
-                    <div
-                      className="absolute inset-0 bg-gradient-to-t from-navy-950/95 via-navy-950/55 to-navy-950/15"
-                      aria-hidden="true"
-                    />
-                  </>
-                ) : (
-                  <div
-                    className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gold-500/10 blur-2xl transition-opacity duration-300 group-hover:opacity-100 opacity-60"
-                    aria-hidden="true"
-                  />
-                )}
-                <div className="relative z-10">
-                  <span
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-lg"
-                    aria-hidden="true"
-                  >
-                    {destination.flag}
-                  </span>
-                  <h2 className="mt-4 font-display text-xl font-semibold">
-                    {destination.name}
-                  </h2>
-                  <p className="mt-2 text-sm leading-relaxed text-white/70">
-                    {destination.tagline}
-                  </p>
-                </div>
-                <span className="relative z-10 mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-gold-300">
-                  Explore {destination.name}
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
-                </span>
-              </Link>
-            </Reveal>
-          ))}
+      <section className="bg-navy-950 py-20 md:py-28">
+        <Container>
+          <h2 className="sr-only">Featured destinations</h2>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {featured.map((destination, index) => (
+              <Reveal key={destination.slug} delay={(index % 4) * 0.06}>
+                <DestinationCard
+                  destination={destination}
+                  headingLevel="h3"
+                  sizes="(min-width: 1024px) 23vw, (min-width: 640px) 45vw, 90vw"
+                />
+              </Reveal>
+            ))}
+          </div>
         </Container>
       </section>
+
+      {more.length > 0 && (
+        <section className="bg-surface py-20 md:py-24">
+          <Container>
+            <Reveal className="max-w-2xl">
+              <h2 className="text-balance font-display text-[clamp(1.75rem,3.5vw,2.5rem)] font-semibold text-navy-900">
+                More places to study.
+              </h2>
+              <p className="mt-4 text-ink-muted">
+                Further destinations we guide students towards, each with its
+                own strengths, costs and entry routes.
+              </p>
+            </Reveal>
+
+            <ul className="mt-12 grid gap-x-10 sm:grid-cols-2 lg:grid-cols-3">
+              {more.map((destination) => (
+                <li key={destination.slug} className="border-t border-border-strong">
+                  <Link
+                    href={`/destinations/${destination.slug}`}
+                    className="group flex h-full items-start justify-between gap-6 py-6"
+                  >
+                    <span>
+                      <span className="block font-display text-2xl text-navy-900 transition-colors group-hover:text-gold-700">
+                        {destination.name}
+                      </span>
+                      <span className="mt-2 block text-sm leading-relaxed text-ink-muted">
+                        {destination.tagline}
+                      </span>
+                    </span>
+                    <ArrowRight
+                      className="mt-2 h-5 w-5 shrink-0 text-gold-700 transition-transform group-hover:translate-x-1"
+                      aria-hidden="true"
+                    />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </Container>
+        </section>
+      )}
 
       <ConsultationCtaBanner />
     </>

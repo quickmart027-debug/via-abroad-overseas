@@ -6,7 +6,7 @@ import { PageHero } from "@/components/sections/page-hero";
 import { ConsultationCtaBanner } from "@/components/sections/consultation-cta-banner";
 import { Container } from "@/components/ui/container";
 import { Reveal } from "@/components/motion/reveal";
-import { destinations, getDestinationBySlug } from "@/data/destinations";
+import { destinations, getDestinationBySlug, destinationNameInSentence } from "@/data/destinations";
 import { services } from "@/data/services";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { PageViewTracker } from "@/components/analytics/page-view-tracker";
@@ -24,7 +24,7 @@ export async function generateMetadata({
   const destination = getDestinationBySlug(slug);
   if (!destination) return {};
   return {
-    title: `Study in ${destination.name}`,
+    title: `Study in ${destinationNameInSentence(destination)}`,
     description: destination.overview,
     alternates: { canonical: `/destinations/${destination.slug}` },
   };
@@ -50,8 +50,7 @@ export default async function DestinationDetailPage({
       />
       <PageViewTracker event="destination_viewed" slug={destination.slug} />
       <PageHero
-        eyebrow={`${destination.flag} Study Destination`}
-        title={`Study in ${destination.name}`}
+        title={`Study in ${destinationNameInSentence(destination)}`}
         description={destination.tagline}
         breadcrumb={[{ label: "Destinations", href: "/destinations" }, { label: destination.name }]}
         backgroundImageSrc={destination.imageSrc}
@@ -127,8 +126,8 @@ export default async function DestinationDetailPage({
               Visa policies, tuition costs, and admission requirements can
               change and vary by university and program. The information on
               this page is general in nature — please consult official
-              government sources and your counselor for current,
-              individualized guidance.
+              government sources and your counsellor for current,
+              individualised guidance.
             </p>
           </Reveal>
         </Container>

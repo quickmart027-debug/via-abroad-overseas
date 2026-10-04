@@ -10,7 +10,7 @@ import { business, addressFull, callHref, emailHref, whatsapp } from "@/lib/conf
 export const metadata: Metadata = {
   title: "Contact Us",
   description:
-    "Get in touch with VIA ABROAD OVERSEAS for study abroad counseling, university admissions, and visa assistance.",
+    "Get in touch with VIA ABROAD OVERSEAS for study abroad counselling, university admissions, and visa assistance.",
   alternates: { canonical: "/contact" },
 };
 
@@ -20,9 +20,8 @@ export default function ContactPage() {
   return (
     <>
       <PageHero
-        eyebrow="Contact Us"
-        title="Let's Start the Conversation"
-        description="Reach out by phone, email, or WhatsApp, or send us your enquiry directly below."
+        title="Talk to a counsellor"
+        description="Call, email or send an enquiry below, and a counsellor will get back to you."
         breadcrumb={[{ label: "Contact" }]}
       />
 
@@ -81,7 +80,7 @@ export default function ContactPage() {
               Submit an Enquiry
             </h2>
             <p className="mt-2 text-sm text-ink-muted">
-              Tell us about your goals and a counselor will get back to you.
+              Tell us about your goals and a counsellor will get back to you.
             </p>
             <div className="mt-6">
               <ContactForm />

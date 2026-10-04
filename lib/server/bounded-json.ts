@@ -6,13 +6,25 @@ export type BoundedJsonResult =
   | { status: "too_large" }
   | { status: "unsupported_media_type" };
 
-/** Reads and parses JSON while enforcing the limit against streamed UTF-8 bytes. */
+/**
+ * Reads and parses a JSON request body without ever buffering more than
+ * `maxBytes`. Checks, in order and before any JSON parsing:
+ * 1. only `application/json` (optionally with parameters) is accepted;
+ * 2. a declared Content-Length over the cap is rejected without reading;
+ * 3. the body is streamed and counted in UTF-8 BYTES (not UTF-16 string
+ *    length), cancelling the stream as soon as the cap is crossed, so a
+ *    missing or lying Content-Length can't force an unbounded read;
+ * 4. the bytes must be valid UTF-8 and valid JSON.
+ */
 export async function readBoundedJson(
   request: Request,
   maxBytes: number
 ): Promise<BoundedJsonResult> {
   const mediaType = request.headers.get("content-type")?.split(";", 1)[0]?.trim().toLowerCase();
   if (mediaType !== "application/json") return { status: "unsupported_media_type" };
+
+  const declaredLength = Number(request.headers.get("content-length"));
+  if (Number.isFinite(declaredLength) && declaredLength > maxBytes) return { status: "too_large" };
 
   if (!request.body) return { status: "malformed_json" };
 

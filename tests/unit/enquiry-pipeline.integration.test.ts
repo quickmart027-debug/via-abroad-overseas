@@ -1,8 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const external = vi.hoisted(() => ({
+  ipLimit: vi.fn(),
   fingerprintLimit: vi.fn(),
   contactLimit: vi.fn(),
+  emailLimit: vi.fn(),
   insertEnquiry: vi.fn(),
   sendBusinessNotificationEmail: vi.fn(),
   sendStudentConfirmationEmail: vi.fn(),
@@ -10,8 +12,10 @@ const external = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/rate-limit/limiter", () => ({
+  formIpLimiter: { limit: external.ipLimit },
   formFingerprintLimiter: { limit: external.fingerprintLimit },
   formContactLimiter: { limit: external.contactLimit },
+  formEmailLimiter: { limit: external.emailLimit },
 }));
 vi.mock("@/lib/database/enquiries", () => ({
   insertEnquiry: external.insertEnquiry,
@@ -39,7 +43,7 @@ function contactPayload(overrides: Record<string, unknown> = {}) {
     phone: "+1 (415) 555-0199",
     email: " ADA@Example.COM ",
     interestedCountry: "United Kingdom",
-    serviceRequired: "Study Abroad Counseling",
+    serviceRequired: "Study Abroad Counselling",
     message: " I would like to study mathematics. ",
     consent: true,
     turnstileToken: "turnstile-test-token",
@@ -81,6 +85,9 @@ beforeEach(() => {
   vi.stubEnv("ALLOW_UNVERIFIED_TURNSTILE_IN_DEV", "false");
 
   providerAction = "contact";
+  const allowed = { success: true, limit: 5, remaining: 4, reset: Date.now() + 60_000 };
+  external.ipLimit.mockResolvedValue(allowed);
+  external.emailLimit.mockResolvedValue(allowed);
   external.fingerprintLimit.mockResolvedValue({
     success: true,
     limit: 5,
@@ -117,8 +124,10 @@ describe("public enquiry pipeline integration", () => {
 
     expect(response.status).toBe(201);
     expect(await response.json()).toEqual({ success: true, id: INSERTED_ENQUIRY.id });
+    expect(external.ipLimit).toHaveBeenCalledTimes(1);
     expect(external.fingerprintLimit).toHaveBeenCalledTimes(1);
     expect(external.contactLimit).toHaveBeenCalledTimes(1);
+    expect(external.emailLimit).toHaveBeenCalledTimes(1);
     expect(external.siteverifyFetch).toHaveBeenCalledTimes(1);
     expect(external.insertEnquiry).toHaveBeenCalledTimes(1);
     expect(external.insertEnquiry).toHaveBeenCalledWith(expect.objectContaining({
@@ -127,7 +136,7 @@ describe("public enquiry pipeline integration", () => {
       phone: "+14155550199",
       email: "ada@example.com",
       interested_country: "United Kingdom",
-      service_required: "Study Abroad Counseling",
+      service_required: "Study Abroad Counselling",
       message: "I would like to study mathematics.",
       source_path: "/contact",
       utm_source: "integration-test",
@@ -141,22 +150,20 @@ describe("public enquiry pipeline integration", () => {
       phone: "+14155550199",
       email: "ada@example.com",
       interestedCountry: "United Kingdom",
-      serviceRequired: "Study Abroad Counseling",
+      serviceRequired: "Study Abroad Counselling",
       sourcePath: "/contact",
       submittedAt: INSERTED_ENQUIRY.created_at,
     }));
     expect(external.sendStudentConfirmationEmail).toHaveBeenCalledTimes(1);
-    expect(external.sendStudentConfirmationEmail).toHaveBeenCalledWith(
-      "ada@example.com",
-      "Ada Lovelace"
-    );
+    // The confirmation deliberately carries no user-supplied name.
+    expect(external.sendStudentConfirmationEmail).toHaveBeenCalledWith("ada@example.com");
   });
 
   it("maps consultation fields through the route and shared pipeline", async () => {
     providerAction = "consultation";
     const response = await consultationPost(requestFor("/api/enquiries/consultation", {
       ...contactPayload(),
-      currentQualification: "Graduate",
+      currentQualification: "Completed bachelor's",
       preferredCountry: "Canada",
       interestedCountry: undefined,
       interestedCourse: "Data Science",
@@ -168,13 +175,13 @@ describe("public enquiry pipeline integration", () => {
     expect(external.insertEnquiry).toHaveBeenCalledWith(expect.objectContaining({
       enquiry_type: "consultation",
       interested_country: "Canada",
-      current_qualification: "Graduate",
+      current_qualification: "Completed bachelor's",
       interested_course: "Data Science",
     }));
     expect(external.siteverifyFetch).toHaveBeenCalledTimes(1);
     expect(external.sendBusinessNotificationEmail).toHaveBeenCalledWith(expect.objectContaining({
       enquiryType: "consultation",
-      currentQualification: "Graduate",
+      currentQualification: "Completed bachelor's",
       interestedCourse: "Data Science",
     }));
   });
@@ -205,7 +212,7 @@ describe("public enquiry pipeline integration", () => {
       interested_country: "Canada",
       service_required: "Find My Options",
       current_qualification: "MBA",
-      message: "Find My Options enquiry. Approximate budget: ₹15–25L.",
+      message: "Find My Options enquiry. Approximate budget (per year, tuition + living): ₹15–25L.",
       source_path: "/",
     }));
     expect(external.sendBusinessNotificationEmail).toHaveBeenCalledWith(expect.objectContaining({
@@ -291,6 +298,8 @@ describe("public enquiry pipeline integration", () => {
   });
 
   it("rejects over-limit requests before calling Turnstile or persistence", async () => {
+    // Per-source limits run before Turnstile; per-recipient (contact/email)
+    // limits only run after Turnstile passes, so they are never reached here.
     external.fingerprintLimit.mockResolvedValueOnce({
       success: false,
       limit: 5,
@@ -304,7 +313,8 @@ describe("public enquiry pipeline integration", () => {
     expect(response.status).toBe(429);
     expect(body).toContain("Too many submissions.");
     expect(external.fingerprintLimit).toHaveBeenCalledTimes(1);
-    expect(external.contactLimit).toHaveBeenCalledTimes(1);
+    expect(external.contactLimit).not.toHaveBeenCalled();
+    expect(external.emailLimit).not.toHaveBeenCalled();
     expect(external.siteverifyFetch).not.toHaveBeenCalled();
     expectNoDownstreamSideEffects();
   });
@@ -336,6 +346,7 @@ describe("public enquiry pipeline integration", () => {
     })));
 
     expect(response.status).toBe(400);
+    expect(external.ipLimit).not.toHaveBeenCalled();
     expect(external.fingerprintLimit).not.toHaveBeenCalled();
     expect(external.contactLimit).not.toHaveBeenCalled();
     expect(external.siteverifyFetch).not.toHaveBeenCalled();
@@ -350,6 +361,7 @@ describe("public enquiry pipeline integration", () => {
     const response = await post(requestFor(path, { fullName: "A" }));
 
     expect(response.status).toBe(400);
+    expect(external.ipLimit).not.toHaveBeenCalled();
     expect(external.fingerprintLimit).not.toHaveBeenCalled();
     expect(external.contactLimit).not.toHaveBeenCalled();
     expect(external.siteverifyFetch).not.toHaveBeenCalled();

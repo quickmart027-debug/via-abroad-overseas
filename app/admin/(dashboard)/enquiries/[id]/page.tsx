@@ -5,21 +5,35 @@ import { requireAdmin } from "@/lib/auth/admin";
 import { getEnquiryById, listAdminNotes } from "@/lib/database/admin-queries";
 import { StatusSelect } from "@/components/admin/status-select";
 import { NotesPanel } from "@/components/admin/notes-panel";
-import { whatsapp } from "@/lib/config";
+import { z } from "zod";
+
+/**
+ * wa.me link that opens a chat WITH THE STUDENT (not the business number).
+ * wa.me needs digits only, including the country code; a bare 10-digit
+ * Indian mobile (starts 6-9) gets the 91 prefix.
+ */
+function studentWhatsappHref(phone: string, message: string) {
+  let digits = phone.replace(/\D/g, "");
+  if (/^0?[6-9]\d{9}$/.test(digits)) digits = `91${digits.slice(-10)}`;
+  if (digits.length < 10) return undefined;
+  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+}
 
 export default async function AdminEnquiryDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
   const { supabase } = await requireAdmin();
+  const { id } = await params;
+  if (!z.string().uuid().safeParse(id).success) notFound();
 
   const enquiry = await getEnquiryById(supabase, id);
   if (!enquiry) notFound();
 
   const notes = await listAdminNotes(supabase, id);
-  const whatsappHref = whatsapp.href(
+  const whatsappHref = studentWhatsappHref(
+    enquiry.phone,
     `Hello ${enquiry.full_name}, this is VIA ABROAD OVERSEAS following up on your enquiry.`
   );
 

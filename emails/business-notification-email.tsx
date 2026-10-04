@@ -5,13 +5,27 @@ import {
   Heading,
   Hr,
   Html,
+  Link,
   Preview,
   Section,
   Text,
 } from "@react-email/components";
 import type { EnquiryEmailData } from "@/lib/email/types";
+import { siteUrl } from "@/lib/config";
+
+/** The business is in Hyderabad, so show submission time in IST, not raw UTC. */
+function formatSubmittedAt(iso: string) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return `${date.toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    dateStyle: "medium",
+    timeStyle: "short",
+  })} IST`;
+}
 
 export function BusinessNotificationEmail({ data }: { data: EnquiryEmailData }) {
+  const adminUrl = `${siteUrl}/admin/enquiries/${data.enquiryId}`;
   const rows: [string, string | undefined][] = [
     ["Enquiry Type", data.enquiryType === "consultation" ? "Free Consultation" : "General Enquiry"],
     ["Name", data.fullName],
@@ -22,7 +36,8 @@ export function BusinessNotificationEmail({ data }: { data: EnquiryEmailData }) 
     ["Current Qualification", data.currentQualification],
     ["Interested Course", data.interestedCourse],
     ["Submitted From", data.sourcePath],
-    ["Submitted At", data.submittedAt],
+    ["Submitted At", formatSubmittedAt(data.submittedAt)],
+    ["Reference", data.enquiryId],
   ];
 
   return (
@@ -58,9 +73,15 @@ export function BusinessNotificationEmail({ data }: { data: EnquiryEmailData }) 
             )}
           </Section>
           <Hr style={{ borderColor: "#e4e7ec" }} />
+          <Text style={{ fontSize: 14, margin: "6px 0" }}>
+            <Link href={adminUrl} style={{ color: "#0b1f3a", textDecoration: "underline" }}>
+              Open this enquiry in the admin dashboard
+            </Link>
+          </Text>
           <Text style={{ fontSize: 12, color: "#7d8494" }}>
             This enquiry has already been saved to the admin dashboard —
-            this email is a notification copy only.
+            this email is a notification copy only. Reply to this email to
+            respond to the student directly.
           </Text>
         </Container>
       </Body>

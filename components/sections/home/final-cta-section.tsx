@@ -2,15 +2,11 @@ import { Container } from "@/components/ui/container";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Reveal } from "@/components/motion/reveal";
 import { ConsultationCtaLink } from "@/components/analytics/consultation-cta-link";
-import { business } from "@/lib/config";
+import { business, callHref, whatsapp } from "@/lib/config";
 
 export function FinalCtaSection() {
   return (
-    <section className="relative overflow-hidden bg-navy-950 py-20 text-white md:py-28">
-      <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_100%,rgba(200,169,107,0.14),transparent)]"
-        aria-hidden="true"
-      />
+    <section className="relative overflow-hidden bg-navy-900 py-20 text-white md:py-28">
       <Container className="relative flex flex-col items-center gap-6 text-center">
         <Reveal>
           <Eyebrow light className="justify-center">
@@ -31,8 +27,23 @@ export function FinalCtaSection() {
             Book Free Consultation
           </ConsultationCtaLink>
         </Reveal>
-        <Reveal delay={0.24} className="text-sm text-white/60">
-          Or call {business.phoneDisplay} to speak with a counselor directly.
+        <Reveal delay={0.24} className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-white/70">
+          <a href={callHref} className="font-semibold text-white underline-offset-4 hover:underline">
+            {business.phoneDisplay}
+          </a>
+          {whatsapp.isConfigured && (
+            <>
+              <span aria-hidden="true" className="text-gold-400">&middot;</span>
+              <a
+                href={whatsapp.href()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-white underline-offset-4 hover:underline"
+              >
+                Chat with a counsellor on WhatsApp
+              </a>
+            </>
+          )}
         </Reveal>
       </Container>
     </section>

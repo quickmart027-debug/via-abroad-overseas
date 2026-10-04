@@ -2,10 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { Eyebrow } from "@/components/ui/eyebrow";
+import { cn } from "@/lib/utils";
 
 export function PageHero({
-  eyebrow,
   title,
   description,
   breadcrumb,
@@ -13,7 +12,6 @@ export function PageHero({
   backgroundImageAlt,
   backgroundImageObjectPosition,
 }: {
-  eyebrow: string;
   title: string;
   description?: string;
   breadcrumb?: { label: string; href?: string }[];
@@ -22,33 +20,45 @@ export function PageHero({
   backgroundImageObjectPosition?: string;
 }) {
   return (
-    <section className="relative overflow-hidden bg-navy-950 pb-16 pt-32 text-white md:pb-20 md:pt-40">
+    <section
+      className={cn(
+        "relative overflow-hidden bg-navy-950 pb-16 pt-32 text-white md:pb-20 md:pt-40",
+        backgroundImageSrc && "flex min-h-[72svh] items-end lg:min-h-[64svh]"
+      )}
+    >
       {backgroundImageSrc ? (
         <>
           <Image
             src={backgroundImageSrc}
             alt={backgroundImageAlt ?? ""}
             fill
+            priority
             sizes="100vw"
             style={{ objectPosition: backgroundImageObjectPosition ?? "center" }}
-            className="object-cover"
+            className="hero-settle object-cover"
           />
+          {/* Same treatment as the homepage hero: copy sits on solid navy at
+              the bottom (phones) or left (desktop); the photograph stays open. */}
           <div
-            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/85 to-navy-950/40"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy-950 from-20% via-navy-950/70 via-50% to-navy-950/20 lg:hidden"
             aria-hidden="true"
           />
           <div
-            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy-950/70 via-navy-950/20 to-transparent"
+            className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-navy-950 from-20% via-navy-950/70 via-45% to-navy-950/0 to-80% lg:block"
+            aria-hidden="true"
+          />
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-navy-950/70 to-transparent"
             aria-hidden="true"
           />
         </>
       ) : (
         <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_45%_at_85%_15%,rgba(200,169,107,0.14),transparent),radial-gradient(45%_45%_at_10%_85%,rgba(53,97,159,0.28),transparent)]"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(45%_45%_at_10%_85%,rgba(53,97,159,0.28),transparent)]"
           aria-hidden="true"
         />
       )}
-      <Container className="relative">
+      <Container className="relative w-full">
         {breadcrumb && breadcrumb.length > 0 && (
           <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-1.5 text-xs text-white/50">
             <Link href="/" className="hover:text-white/80">
@@ -70,8 +80,7 @@ export function PageHero({
             ))}
           </nav>
         )}
-        <Eyebrow light>{eyebrow}</Eyebrow>
-        <h1 className="mt-4 max-w-3xl text-balance font-display text-[clamp(2rem,4.5vw,3.25rem)] font-semibold leading-[1.1]">
+        <h1 className="max-w-3xl text-balance font-display text-[clamp(2rem,4.5vw,3.25rem)] font-semibold leading-[1.1]">
           {title}
         </h1>
         {description && (

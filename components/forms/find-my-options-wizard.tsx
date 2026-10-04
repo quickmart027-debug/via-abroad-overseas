@@ -26,9 +26,19 @@ const STEPS = [
   { key: "contact", label: "Your Details" },
 ] as const;
 
-const educationOptions = ["B.Tech", "B.Sc", "B.Com", "BBA", "BCA", "MBA", "Other"] as const;
+const educationOptions = ["12th / Intermediate", "B.Tech", "B.Sc", "B.Com", "BBA", "BCA", "MBA", "Other"] as const;
 const budgetOptions = Object.keys(budgetRangeLabels) as (keyof typeof budgetRangeLabels)[];
-const destinationOptions = ["UK", "USA", "Australia", "Canada", "Germany", "Not Sure"] as const;
+const destinationOptions = [
+  "UK",
+  "USA",
+  "Australia",
+  "Canada",
+  "Germany",
+  "Ireland",
+  "New Zealand",
+  "France",
+  "Not Sure",
+] as const;
 
 export function FindMyOptionsWizard() {
   const [step, setStep] = React.useState(0);
@@ -76,7 +86,6 @@ export function FindMyOptionsWizard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...data,
-          [HONEYPOT_FIELD]: "",
           ...getStoredUtmAttribution(),
           source_path: window.location.pathname,
         }),
@@ -104,8 +113,8 @@ export function FindMyOptionsWizard() {
       >
         <CheckCircle2 className="h-10 w-10 text-success" aria-hidden="true" />
         <p className="max-w-sm text-success">
-          Thank you! A counselor will review your answers and reach out with
-          your options shortly.
+          Thanks, we have your answers. A counsellor will call you on the
+          number you gave to talk through the options that fit.
         </p>
       </div>
     );
@@ -121,7 +130,7 @@ export function FindMyOptionsWizard() {
     >
       <div className="absolute left-[-9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
         <label htmlFor={HONEYPOT_FIELD}>Company Website</label>
-        <input id={HONEYPOT_FIELD} name={HONEYPOT_FIELD} type="text" tabIndex={-1} autoComplete="off" />
+        <input id={HONEYPOT_FIELD} type="text" tabIndex={-1} autoComplete="off" {...register(HONEYPOT_FIELD)} />
       </div>
 
       <ol aria-label="Progress" className="flex items-center gap-2">
@@ -135,7 +144,7 @@ export function FindMyOptionsWizard() {
                   ? "bg-gold-500 text-navy-950"
                   : index === step
                     ? "border-2 border-gold-500 text-navy-900"
-                    : "border border-border-strong text-ink-faint"
+                    : "border border-border-strong text-ink-muted"
               )}
             >
               {index + 1}
@@ -143,7 +152,7 @@ export function FindMyOptionsWizard() {
             <span
               className={cn(
                 "hidden text-xs font-semibold sm:block",
-                index === step ? "text-navy-900" : "text-ink-faint"
+                index === step ? "text-navy-900" : "text-ink-muted"
               )}
             >
               {s.label}
@@ -162,9 +171,15 @@ export function FindMyOptionsWizard() {
         {step === 0 && (
           <fieldset>
             <legend className="font-display text-xl font-semibold text-navy-900">
-              What did you study?
+              What did you study, or what are you studying now?
             </legend>
-            <OptionGrid name="educationLevel" label="Education level" options={educationOptions} register={register} />
+            <OptionGrid
+              name="educationLevel"
+              label="Education level"
+              options={educationOptions}
+              register={register}
+              columns={4}
+            />
             {errors.educationLevel && (
               <p role="alert" className="mt-3 text-xs font-medium text-error">
                 {errors.educationLevel.message}
@@ -176,14 +191,16 @@ export function FindMyOptionsWizard() {
         {step === 1 && (
           <fieldset>
             <legend className="font-display text-xl font-semibold text-navy-900">
-              What&rsquo;s your approximate budget?
+              What&rsquo;s your approximate budget per year?
             </legend>
+            <p className="mt-1.5 text-sm text-ink-muted">Tuition plus living costs, in rupees.</p>
             <OptionGrid
               name="budgetRange"
               label="Approximate budget"
               options={budgetOptions}
               labels={budgetRangeLabels}
               register={register}
+              columns={5}
             />
             {errors.budgetRange && (
               <p role="alert" className="mt-3 text-xs font-medium text-error">
@@ -196,7 +213,7 @@ export function FindMyOptionsWizard() {
         {step === 2 && (
           <fieldset>
             <legend className="font-display text-xl font-semibold text-navy-900">
-              Preferred destination?
+              Where would you like to study?
             </legend>
             <OptionGrid name="preferredDestination" label="Preferred destination" options={destinationOptions} register={register} />
             {errors.preferredDestination && (
@@ -288,15 +305,28 @@ function OptionGrid<Name extends "educationLevel" | "budgetRange" | "preferredDe
   options,
   labels,
   register,
+  columns = 3,
 }: {
   name: Name;
   label: string;
   options: readonly string[];
   labels?: Record<string, string>;
   register: ReturnType<typeof useForm<FindMyOptionsInput>>["register"];
+  columns?: 3 | 4 | 5;
 }) {
   return (
-    <div role="radiogroup" aria-label={label} aria-required="true" className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+    <div
+      role="radiogroup"
+      aria-label={label}
+      aria-required="true"
+      className={cn(
+        // An odd last option spans the full row on phones instead of sitting alone.
+        "mt-5 grid grid-cols-2 gap-3 [&>*:last-child:nth-child(odd)]:col-span-2 sm:[&>*:last-child:nth-child(odd)]:col-span-1",
+        columns === 3 && "sm:grid-cols-3",
+        columns === 4 && "sm:grid-cols-4",
+        columns === 5 && "sm:grid-cols-5"
+      )}
+    >
       {options.map((option) => {
         const id = `${name}-${option}`;
         return (

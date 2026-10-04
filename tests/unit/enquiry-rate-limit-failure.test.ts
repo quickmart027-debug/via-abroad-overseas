@@ -2,7 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   fingerprintLimit: vi.fn(),
+  ipLimit: vi.fn(),
   contactLimit: vi.fn(),
+  emailLimit: vi.fn(),
   hashFingerprint: vi.fn(),
   getClientIp: vi.fn(),
   deriveContactKey: vi.fn(),
@@ -11,7 +13,9 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/rate-limit/limiter", () => ({
   formFingerprintLimiter: { limit: mocks.fingerprintLimit },
+  formIpLimiter: { limit: mocks.ipLimit },
   formContactLimiter: { limit: mocks.contactLimit },
+  formEmailLimiter: { limit: mocks.emailLimit },
 }));
 vi.mock("@/lib/security/fingerprint", () => ({
   hashRequestFingerprint: mocks.hashFingerprint,
@@ -19,6 +23,8 @@ vi.mock("@/lib/security/fingerprint", () => ({
 }));
 vi.mock("@/lib/rate-limit/contact-key", () => ({
   deriveContactPairRateLimitKey: mocks.deriveContactKey,
+  deriveEmailRateLimitKey: () => "email:v1:private-digest",
+  deriveIpRateLimitKey: () => "ip:v1:private-digest",
 }));
 vi.mock("@/lib/rate-limit/config", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/rate-limit/config")>();
@@ -46,6 +52,7 @@ describe("enquiry rate limit infrastructure failure", () => {
     mocks.hashFingerprint.mockResolvedValue("safe-fingerprint-digest");
     mocks.getSalt.mockReturnValue("test-only-abuse-hash-salt-which-is-long-enough-123456");
     mocks.deriveContactKey.mockReturnValue("contact-pair:v1:private-digest");
+    mocks.ipLimit.mockResolvedValue({ success: true, limit: 10, remaining: 9, reset: 0 });
     mocks.fingerprintLimit.mockRejectedValue(
       new RateLimitUnavailableError("upstash_unavailable")
     );

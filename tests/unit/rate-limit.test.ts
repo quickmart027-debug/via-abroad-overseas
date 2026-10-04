@@ -112,11 +112,13 @@ describe("rate limiter backend behavior", () => {
     expect(String(error)).not.toContain(upstashToken);
   });
 
-  it("preserves the fingerprint 5 per 10 minutes and contact 3 per hour limits", async () => {
+  it("preserves the fingerprint/contact limits and adds IP-only and email-only limits", async () => {
     const source = await import("@/lib/rate-limit/limiter");
     expect(source.rateLimitPolicy).toEqual({
       fingerprint: { requests: 5, window: "10 m" },
+      ip: { requests: 10, window: "10 m" },
       contactPair: { requests: 3, window: "1 h" },
+      email: { requests: 3, window: "1 h" },
     });
   });
 });

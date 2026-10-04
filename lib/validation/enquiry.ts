@@ -16,10 +16,10 @@ function nonEmptyEnum(values: string[]) {
 const countryValues = [...destinations.map((d) => d.name), "Other"];
 const serviceValues = [...services.map((s) => s.title), "Not Sure Yet"];
 const qualificationValues = [
-  "High School",
-  "Undergraduate",
-  "Graduate",
-  "Postgraduate",
+  "12th / Intermediate",
+  "Pursuing bachelor's",
+  "Completed bachelor's",
+  "Master's degree",
   "Other",
 ];
 
@@ -35,11 +35,20 @@ export const enquiryStatusSchema = z.enum([
   "spam",
 ]);
 
+/**
+ * Real names only: Unicode letters, combining marks, whitespace, and . ' ’ -
+ * (’ because phone keyboards auto-convert apostrophes). Rejecting digits,
+ * URLs, and markup characters stops the name field — which is echoed into
+ * notification emails — being used to smuggle links or content.
+ */
+const NAME_PATTERN = /^(?=.*\p{L})[\p{L}\p{M}\s.'’-]+$/u;
+
 const nameSchema = z
   .string()
   .trim()
   .min(2, "Please enter your full name.")
   .max(120, "Name is too long.")
+  .regex(NAME_PATTERN, "Please enter your name using letters only.")
   .transform((value) => value.replace(/\s+/g, " "));
 
 const phoneSchema = z
@@ -79,7 +88,10 @@ const consentSchema = z.literal(true, {
 export const HONEYPOT_FIELD = "company_website";
 
 const antiSpamFields = {
-  [HONEYPOT_FIELD]: z.string().max(0).optional().or(z.literal("")),
+  // Accept any string here on purpose: a filled honeypot must reach the
+  // pipeline's silent fake-success branch, not fail validation with a 400
+  // whose fieldErrors would tell the bot exactly which field gave it away.
+  [HONEYPOT_FIELD]: z.string().optional(),
   turnstileToken: z.string().min(1, "Please complete the verification challenge."),
   formRenderedAt: z.number(),
 };
@@ -117,6 +129,7 @@ export const consultationFormSchema = z.object({
  * infrastructure is introduced.
  */
 export const educationLevelSchema = nonEmptyEnum([
+  "12th / Intermediate",
   "B.Tech",
   "B.Sc",
   "B.Com",
@@ -126,9 +139,11 @@ export const educationLevelSchema = nonEmptyEnum([
   "Other",
 ]);
 
-export const budgetRangeSchema = nonEmptyEnum(["10-15L", "15-25L", "25-40L", "40L+"]);
+export const budgetRangeSchema = nonEmptyEnum(["under-10L", "10-15L", "15-25L", "25-40L", "40L+"]);
 
+/** Total per year (tuition + living), as asked in the wizard. */
 export const budgetRangeLabels: Record<string, string> = {
+  "under-10L": "Under ₹10L",
   "10-15L": "₹10–15L",
   "15-25L": "₹15–25L",
   "25-40L": "₹25–40L",
@@ -141,6 +156,9 @@ export const findMyOptionsDestinationSchema = nonEmptyEnum([
   "Australia",
   "Canada",
   "Germany",
+  "Ireland",
+  "New Zealand",
+  "France",
   "Not Sure",
 ]);
 
@@ -160,12 +178,17 @@ export type FindMyOptionsInput = z.infer<typeof findMyOptionsSchema>;
 export type ContactFormInput = z.infer<typeof contactFormSchema>;
 export type ConsultationFormInput = z.infer<typeof consultationFormSchema>;
 
-/** Attribution metadata captured client-side and re-validated server-side. */
+/**
+ * Attribution metadata captured client-side and re-validated server-side.
+ * Each field falls back to undefined on its own (`.catch`), so one bad
+ * value (e.g. a very long search-engine referrer) drops only that field
+ * instead of silently discarding all attribution for the lead.
+ */
 export const attributionSchema = z.object({
-  source_path: z.string().max(300).optional(),
-  referrer: z.string().max(500).optional(),
-  utm_source: z.string().max(120).optional(),
-  utm_medium: z.string().max(120).optional(),
-  utm_campaign: z.string().max(120).optional(),
+  source_path: z.string().max(300).optional().catch(undefined),
+  referrer: z.string().max(500).optional().catch(undefined),
+  utm_source: z.string().max(120).optional().catch(undefined),
+  utm_medium: z.string().max(120).optional().catch(undefined),
+  utm_campaign: z.string().max(120).optional().catch(undefined),
 });
 export type Attribution = z.infer<typeof attributionSchema>;

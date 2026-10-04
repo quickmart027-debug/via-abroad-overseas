@@ -1,6 +1,5 @@
 import { Wallet, GraduationCap, FileCheck2, Briefcase } from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { Eyebrow } from "@/components/ui/eyebrow";
 import { Reveal } from "@/components/motion/reveal";
 import { ConsultationCtaLink } from "@/components/analytics/consultation-cta-link";
 
@@ -32,12 +31,15 @@ export function ParentsSection() {
     <section className="bg-surface-muted py-20 md:py-28">
       <Container>
         <Reveal className="mx-auto max-w-2xl text-center">
-          <Eyebrow className="justify-center">For Students. For Parents.</Eyebrow>
-          <h2 className="mt-4 text-balance font-display text-[clamp(1.75rem,3.5vw,2.75rem)] font-semibold text-navy-900">
+          <h2 className="text-balance font-display text-[clamp(1.75rem,3.5vw,2.75rem)] font-semibold text-navy-900">
             For students. For parents.
             <br />
             For the future.
           </h2>
+          <p className="mt-4 text-ink-muted">
+            Choosing to study abroad is a major decision — and we believe
+            students and parents deserve clarity at every step.
+          </p>
         </Reveal>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2">

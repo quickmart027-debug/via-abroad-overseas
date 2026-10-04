@@ -34,7 +34,7 @@
   --border-strong: #c9cfd9;
   --ink: #17202a;
   --ink-muted: #545b6a;
-  --ink-faint: #545b6a;
+  --ink-faint: #676e7d; /* ≥4.5:1 on white and ivory */
 
   /* Semantic states */
   --success: #1e7f4f;
@@ -137,14 +137,24 @@
   }
 }
 
-* {
-  border-color: var(--border-subtle);
+/* Default border colour in the base layer, so border-* utilities win.
+   (Unlayered, it silently overrode every border colour class.) */
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--border-subtle);
+  }
 }
 
 html {
   scroll-behavior: smooth;
 }
 
+/* Reduced motion: keep every state change (colour, opacity, focus, open/
+   closed) but remove travel. Animations finish instantly and transitions
+   are limited to non-spatial properties, so hover/focus feedback still
+   reads without anything sliding or scaling. */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -154,32 +164,131 @@ html {
   *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
+    transition-property: color, background-color, border-color, opacity, box-shadow, outline-color !important;
     scroll-behavior: auto !important;
   }
 }
 
-body {
-  background: var(--surface-muted);
-  color: var(--ink);
-  font-family: var(--font-sans), system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+/* Scroll reveal — progressive enhancement (see components/motion/reveal.tsx).
+   Visible by default; only browsers with view timelines animate it. */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-::selection {
-  background: var(--gold-300);
-  color: var(--navy-900);
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal-up cubic-bezier(0.16, 1, 0.3, 1) both;
+      animation-timeline: view();
+      animation-range: entry calc(var(--reveal-delay, 0) * 100%) entry calc(55% + var(--reveal-delay, 0) * 100%);
+    }
+  }
 }
 
-:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
-  border-radius: 2px;
+.reveal-stagger > :nth-child(4n + 2) {
+  --reveal-delay: 0.06;
+}
+.reveal-stagger > :nth-child(4n + 3) {
+  --reveal-delay: 0.12;
+}
+.reveal-stagger > :nth-child(4n + 4) {
+  --reveal-delay: 0.18;
+}
+
+/* Small UI entrances (floating actions, mobile nav sheet). */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.8);
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pop-in {
+    animation: pop-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+  .sheet-in {
+    animation: sheet-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+/* Hero entrance — the page's one authored moment. Pure CSS so it runs at
+   first paint without waiting for hydration. */
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes hero-settle {
+  from {
+    transform: scale(1.06);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-rise {
+    animation: hero-rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(var(--hero-step, 0) * 90ms);
+  }
+  .hero-settle {
+    animation: hero-settle 2.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+/* Element defaults live in the base layer so utilities (rounded-full,
+   focus-visible:outline-none + ring, bg-*) always win over them. */
+@layer base {
+  body {
+    background: var(--surface-muted);
+    color: var(--ink);
+    caret-color: var(--navy-700);
+    accent-color: var(--navy-900);
+    font-family: var(--font-sans), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--gold-300);
+    color: var(--navy-900);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
 }
 
 .font-display {
   font-family: var(--font-display), serif;
+  /* DM Serif Display only ships weight 400; font-semibold would otherwise be
+     synthesised by smearing the glyphs. */
+  font-synthesis: none;
 }
 
 /* Thin gold accent rule, used as a section motif */
@@ -206,20 +315,24 @@ body {
   text-wrap: balance;
 }
 
-.container-outer {
-  max-width: 90rem;
-  margin-inline: auto;
-  padding-inline: 1.25rem;
-}
-
-@media (min-width: 768px) {
+/* In the components layer so utilities like `max-w-3xl` on a Container
+   can narrow it (unlayered CSS would silently win over every utility). */
+@layer components {
   .container-outer {
-    padding-inline: 2.5rem;
+    max-width: 90rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
   }
-}
 
-@media (min-width: 1280px) {
-  .container-outer {
-    padding-inline: 4rem;
+  @media (min-width: 768px) {
+    .container-outer {
+      padding-inline: 2.5rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .container-outer {
+      padding-inline: 4rem;
+    }
   }
 }

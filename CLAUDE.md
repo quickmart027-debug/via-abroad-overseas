@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev          # dev server (Turbopack) on :3000
 npm run build        # production build (also runs full typecheck)
 npm run start        # serve the production build
-npm run lint         # ESLint (0 errors required; 2 known react-hook-form watch() warnings are expected)
+npm run lint         # ESLint (0 errors, 0 warnings)
 npm run typecheck    # tsc --noEmit
 npm run test         # Vitest unit tests (tests/unit/)
 npm run test:e2e     # Playwright e2e — builds + starts the app itself (tests/e2e/)
@@ -35,15 +35,15 @@ Vitest aliases the `server-only` package to a stub (`tests/stubs/server-only.ts`
 Study-abroad consultancy site + lead-management platform. Public marketing site → forms → Supabase Postgres → email, plus an authenticated admin dashboard. Full docs live in `docs/` (`ARCHITECTURE.md`, `SECURITY.md`, `DEPLOYMENT.md`, `ADMIN_GUIDE.md`).
 
 ### Route groups define chrome and trust boundary
-- `app/layout.tsx` is **chrome-less** (fonts, analytics, JSON-LD only).
-- `app/(public)/layout.tsx` adds the site header/footer/floating actions. All marketing pages live here.
+- `app/layout.tsx` is **chrome-less** (fonts, JSON-LD, toaster only).
+- `app/(public)/layout.tsx` adds the site header/footer/floating actions **and the GA4/consent `AnalyticsProvider`**. All marketing pages live here. Never mount analytics in the root layout: `/admin` URLs (e.g. `?search=`) carry student PII.
 - `app/admin/(dashboard)/layout.tsx` has its own operational shell and calls `requireAdmin()` at the top. `app/admin/login/` is standalone.
 - Both the root and the `(public)` group have their own `not-found.tsx` (sharing `components/sections/not-found-content.tsx`) so `notFound()` inside the group keeps the public chrome.
 
 ### Three Supabase clients — do not mix them up (`lib/supabase/`)
 - `client.ts` — browser, publishable key only. Used solely by the admin login form.
 - `server.ts` (`createServerSupabaseClient`) — server, **session-bound** (publishable key + the user's cookie JWT). Every admin dashboard read/write goes through this, so RLS is genuinely enforced as a second layer.
-- `service.ts` (`getServiceSupabaseClient`) — **secret key, bypasses RLS.** The ONLY legitimate use is server-side inserts of public form submissions and admin CSV export. Guarded by `import "server-only"`; never import it into a client component.
+- `service.ts` (`getServiceSupabaseClient`) — **secret key, bypasses RLS.** The ONLY legitimate use is server-side inserts of public form submissions (`lib/database/enquiries.ts`); admin CSV export uses the session client like every other admin read. Guarded by `import "server-only"`; never import it into a client component.
 
 Every secret-reading module (`lib/supabase/service.ts`, `lib/security/turnstile.ts`, `lib/security/fingerprint.ts`, `lib/rate-limit/limiter.ts`, `lib/email/send.ts`, `lib/database/*`, `lib/auth/admin.ts`) starts with `import "server-only"` — that guard turns an accidental client import into a build error.
 
@@ -53,7 +53,7 @@ Every secret-reading module (`lib/supabase/service.ts`, `lib/security/turnstile.
 3. Postgres RLS (`supabase/migrations/0007_row_level_security.sql`) enforces it again; anon has zero policies. `is_admin()` is `security definer` with `set search_path = public`.
 
 ### The form pipeline is the heart of the app (`lib/server/enquiry-pipeline.ts`)
-Both `/api/enquiries/contact` and `/api/enquiries/consultation` share one pipeline in this exact order: honeypot → timing heuristics → Upstash rate limit (fingerprint + email/phone) → **Turnstile server verification** → **DB insert (source of truth)** → best-effort emails via `Promise.allSettled`. Rules: the DB insert result determines success; a failed email is logged (with enquiry id) but never rolls back the lead or flips the 2xx response. Validation uses the **same Zod schema** as the client (`lib/validation/enquiry.ts`) — the server never trusts the client's pass/fail.
+All three `/api/enquiries/{contact,consultation,find-my-options}` routes share one pipeline in this exact order: (route) size/Content-Type guard + Zod → honeypot → timing heuristics → per-source Upstash limits (IP-only + IP/UA fingerprint) → **Turnstile server verification** (incl. hostname) → per-recipient Upstash limits (email-only + email/phone pair; after Turnstile so invalid tokens can't burn a victim's quota) → **DB insert (source of truth)** → best-effort emails via `Promise.allSettled`. Rules: the DB insert result determines success; a failed email is logged (with enquiry id) but never rolls back the lead or flips the 2xx response. Validation uses the **same Zod schema** as the client (`lib/validation/enquiry.ts`) — the server never trusts the client's pass/fail.
 
 ### Security invariants that have dedicated tests — preserve them
 - **Turnstile fails closed and never bypasses in production.** `lib/security/turnstile.ts#isDevTurnstileBypassAllowed()` requires `NODE_ENV !== "production"` AND `VERCEL_ENV !== "production"` AND `ALLOW_UNVERIFIED_TURNSTILE_IN_DEV === "true"`. Locked by `tests/unit/turnstile-bypass.test.ts`.

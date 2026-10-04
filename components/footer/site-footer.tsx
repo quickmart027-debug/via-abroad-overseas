@@ -31,7 +31,7 @@ export function SiteFooter() {
           <p className="font-display text-xl font-semibold text-white">
             VIA ABROAD <span className="text-gold-400">OVERSEAS</span>
           </p>
-          <p className="mt-1 text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-gold-300/70">
+          <p className="mt-1 text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-gold-300/70">
             Make The Move
           </p>
           <p className="mt-4 text-sm leading-relaxed text-white/60">
@@ -59,12 +59,12 @@ export function SiteFooter() {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-gold-400">
             Destinations
           </h2>
-          <ul className="mt-4 space-y-3 text-sm">
+          <ul className="mt-3 text-sm md:mt-4 md:space-y-3">
             {featuredDestinations.map((destination) => (
               <li key={destination.slug}>
                 <Link
                   href={`/destinations/${destination.slug}`}
-                  className="text-white/70 hover:text-white"
+                  className="flex min-h-11 items-center text-white/70 hover:text-white md:inline md:min-h-0"
                 >
                   {destination.name}
                 </Link>
@@ -77,12 +77,12 @@ export function SiteFooter() {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-gold-400">
             Services
           </h2>
-          <ul className="mt-4 space-y-3 text-sm">
+          <ul className="mt-3 text-sm md:mt-4 md:space-y-3">
             {services.map((service) => (
               <li key={service.slug}>
                 <Link
                   href={`/services/${service.slug}`}
-                  className="text-white/70 hover:text-white"
+                  className="flex min-h-11 items-center text-white/70 hover:text-white md:inline md:min-h-0"
                 >
                   {service.title}
                 </Link>
@@ -95,10 +95,10 @@ export function SiteFooter() {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-gold-400">
             Company
           </h2>
-          <ul className="mt-4 space-y-3 text-sm">
+          <ul className="mt-3 text-sm md:mt-4 md:space-y-3">
             {footerCompanyLinks.map((link) => (
               <li key={link.href}>
-                <Link href={link.href} className="text-white/70 hover:text-white">
+                <Link href={link.href} className="flex min-h-11 items-center text-white/70 hover:text-white md:inline md:min-h-0">
                   {link.label}
                 </Link>
               </li>
@@ -110,15 +110,15 @@ export function SiteFooter() {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-gold-400">
             Contact
           </h2>
-          <ul className="mt-4 space-y-3 text-sm text-white/70">
+          <ul className="mt-3 space-y-1 text-sm text-white/70 md:mt-4 md:space-y-3">
             <li>
-              <a href={callHref} className="flex items-start gap-2 hover:text-white">
+              <a href={callHref} className="flex min-h-11 items-center gap-2 hover:text-white md:min-h-0 md:items-start">
                 <Phone className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                 {business.phoneDisplay}
               </a>
             </li>
             <li>
-              <a href={emailHref} className="flex items-start gap-2 break-all hover:text-white">
+              <a href={emailHref} className="flex min-h-11 items-center gap-2 break-all hover:text-white md:min-h-0 md:items-start">
                 <Mail className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                 {business.email}
               </a>
@@ -146,7 +146,7 @@ export function SiteFooter() {
           </p>
           <div className="flex gap-5">
             {legalLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="hover:text-white/80">
+              <Link key={link.href} href={link.href} className="inline-flex min-h-11 items-center hover:text-white/80 md:min-h-0">
                 {link.label}
               </Link>
             ))}

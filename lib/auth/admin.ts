@@ -31,6 +31,19 @@ export async function requireAdmin(): Promise<{
     redirect("/admin/login");
   }
 
+  // MFA step-up: once a user has a verified factor, a password-only (aal1)
+  // session is not enough. `user.factors` comes from the server-verified
+  // getUser() above; the AAL call reads the aal claim of that same token.
+  // Users without a factor are not forced into MFA yet — enforcement becomes
+  // total once MFA is mandated for every admin in the Supabase dashboard.
+  const hasVerifiedFactor = (user.factors ?? []).some((factor) => factor.status === "verified");
+  const { data: aal, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  const requiresAal2 = hasVerifiedFactor || aal?.nextLevel === "aal2";
+  if (aalError || (requiresAal2 && aal?.currentLevel !== "aal2")) {
+    await supabase.auth.signOut();
+    redirect("/admin/login");
+  }
+
   const { data: profile } = await supabase
     .from("admin_profiles")
     .select("id, auth_user_id, display_name, role")

@@ -10,7 +10,7 @@ import { services, type Service } from "@/data/services";
 export const metadata: Metadata = {
   title: "Services",
   description:
-    "Explore VIA ABROAD OVERSEAS services: study abroad counseling, university admissions, visa assistance, career counseling, application support, and scholarship guidance.",
+    "Explore VIA ABROAD OVERSEAS services: study abroad counselling, university admissions, visa assistance, career counselling, application support, and scholarship guidance.",
   alternates: { canonical: "/services" },
 };
 
@@ -27,9 +27,8 @@ export default function ServicesPage() {
   return (
     <>
       <PageHero
-        eyebrow="Our Services"
-        title="End-to-End Study Abroad Services"
-        description="From your first consultation to pre-departure preparation, every service is designed to move your application forward with clarity."
+        title="From dream to departure."
+        description="Six services, from the first consultation to pre-departure. Use one or all of them; your counsellor will suggest which you actually need."
         breadcrumb={[{ label: "Services" }]}
       />
 

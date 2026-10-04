@@ -3,36 +3,35 @@ import { Target, Eye, HeartHandshake, ShieldCheck, Users, Compass } from "lucide
 import { PageHero } from "@/components/sections/page-hero";
 import { ConsultationCtaBanner } from "@/components/sections/consultation-cta-banner";
 import { Container } from "@/components/ui/container";
-import { Eyebrow } from "@/components/ui/eyebrow";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion/reveal";
 import { team } from "@/data/team";
 
 export const metadata: Metadata = {
   title: "About Us",
   description:
-    "Learn about VIA ABROAD OVERSEAS, our mission, vision, and values as a study abroad and overseas education consultancy.",
+    "Who we are at VIA ABROAD OVERSEAS, a study abroad consultancy in Nizampet, Hyderabad, and how we work with students and parents.",
   alternates: { canonical: "/about" },
 };
 
 const values = [
   {
-    title: "Student-First Guidance",
-    description: "Every recommendation is built around your goals, not a one-size-fits-all script.",
+    title: "Your goals first",
+    description: "Recommendations start from your marks, budget and plans, not from a standard list.",
     icon: HeartHandshake,
   },
   {
-    title: "Transparency",
-    description: "Clear communication about process, timelines, and realistic expectations.",
+    title: "Straight answers",
+    description: "What each step involves, how long it takes, and what is realistic for your profile.",
     icon: ShieldCheck,
   },
   {
-    title: "Personal Attention",
-    description: "A counselor who understands your specific profile and circumstances.",
+    title: "Someone who knows your file",
+    description: "A counsellor who understands your profile and your circumstances.",
     icon: Users,
   },
   {
-    title: "Global Perspective",
-    description: "Guidance informed by an understanding of multiple education systems.",
+    title: "Countries side by side",
+    description: "We compare destinations on cost, course length and work options so you see the trade-offs.",
     icon: Compass,
   },
 ];
@@ -41,9 +40,8 @@ export default function AboutPage() {
   return (
     <>
       <PageHero
-        eyebrow="About Us"
         title="About VIA ABROAD OVERSEAS"
-        description="Dedicated to helping students achieve their international education goals through professional, transparent guidance."
+        description="A study abroad consultancy in Nizampet, Hyderabad, working with students from the first conversation to the day they fly."
         breadcrumb={[{ label: "About" }]}
       />
 
@@ -51,14 +49,14 @@ export default function AboutPage() {
         <Container className="max-w-3xl">
           <Reveal>
             <p className="text-lg leading-relaxed text-ink-muted">
-              VIA ABROAD OVERSEAS is dedicated to helping students achieve
-              their international education goals. We provide professional
-              guidance for university selection, admissions, visa processes,
-              and career planning.
+              We help students decide where and what to study, shortlist
+              universities, prepare applications and visa documents, and think
+              through the career the course should lead to.
             </p>
             <p className="mt-5 text-lg leading-relaxed text-ink-muted">
-              Our mission is to make overseas education simple, transparent,
-              and accessible for every student.
+              Most families come to us with the same questions: which country,
+              which course, what will it cost, and will the visa come through.
+              Our job is to answer them plainly, with your profile in front of us.
             </p>
           </Reveal>
         </Container>
@@ -74,8 +72,8 @@ export default function AboutPage() {
               Our Mission
             </h2>
             <p className="mt-3 leading-relaxed text-ink-muted">
-              To empower students with the right information and guidance to
-              build successful global careers.
+              To give every student accurate information and honest advice, so
+              they can build a career abroad on a sound decision.
             </p>
           </Reveal>
           <Reveal delay={0.08} className="rounded-2xl border border-border-subtle bg-surface p-8">
@@ -86,8 +84,8 @@ export default function AboutPage() {
               Our Vision
             </h2>
             <p className="mt-3 leading-relaxed text-ink-muted">
-              To become a trusted global education partner for students
-              seeking international opportunities.
+              To be the consultancy students and parents trust when they plan
+              to study abroad.
             </p>
           </Reveal>
         </Container>
@@ -96,9 +94,8 @@ export default function AboutPage() {
       <section className="bg-surface py-20 md:py-28">
         <Container>
           <Reveal className="mx-auto max-w-2xl text-center">
-            <Eyebrow className="justify-center">Our Values</Eyebrow>
-            <h2 className="mt-4 text-balance font-display text-[clamp(1.75rem,3.5vw,2.5rem)] font-semibold text-navy-900">
-              What Guides Our Counseling
+            <h2 className="text-balance font-display text-[clamp(1.75rem,3.5vw,2.5rem)] font-semibold text-navy-900">
+              What Guides Our Counselling
             </h2>
           </Reveal>
           <StaggerGroup className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -128,7 +125,6 @@ export default function AboutPage() {
       {team.length > 0 && (
         <section className="bg-surface-muted py-20 md:py-28">
           <Container>
-            <Eyebrow className="justify-center">Our Team</Eyebrow>
           </Container>
         </section>
       )}

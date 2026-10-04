@@ -21,12 +21,12 @@ export const destinations: Destination[] = [
     slug: "usa",
     countryCode: "US",
     flag: "🇺🇸",
-    tagline: "Diverse universities and flexible course structures.",
+    tagline: "Every kind of university, with flexible credit-based courses.",
     overview:
-      "The United States is home to a vast range of universities offering flexibility in course selection, research opportunities, and campus life across every region of the country.",
+      "The US has universities of every size and type, with flexible credit-based courses, strong research, and campus life in every region of the country.",
     popularAreas: ["Business & Management", "Computer Science", "Engineering", "Data Science"],
     highlights: [
-      "Wide range of university sizes and specializations",
+      "Wide range of university sizes and specialisations",
       "Flexible credit-based course structures",
       "Strong research and industry connections at many institutions",
     ],
@@ -40,7 +40,7 @@ export const destinations: Destination[] = [
     slug: "canada",
     countryCode: "CA",
     flag: "🇨🇦",
-    tagline: "Welcoming environment with strong post-study pathways.",
+    tagline: "Public universities and colleges, with structured post-study work options.",
     overview:
       "Canada is known for its welcoming approach to international students, quality public universities and colleges, and structured post-study work options.",
     popularAreas: ["Engineering", "Business", "Healthcare Programs", "Information Technology"],
@@ -59,9 +59,9 @@ export const destinations: Destination[] = [
     slug: "uk",
     countryCode: "GB",
     flag: "🇬🇧",
-    tagline: "Globally recognized universities with shorter course durations.",
+    tagline: "One-year master's at many universities, and a long academic reputation.",
     overview:
-      "The United Kingdom offers a long academic heritage, globally recognized universities, and typically shorter postgraduate course durations compared to many other destinations.",
+      "The United Kingdom offers a long academic heritage, globally recognised universities, and typically shorter postgraduate course durations compared to many other destinations.",
     popularAreas: ["Business & Finance", "Law", "Engineering", "Design"],
     highlights: [
       "One-year postgraduate programs at many universities",
@@ -78,7 +78,7 @@ export const destinations: Destination[] = [
     slug: "australia",
     countryCode: "AU",
     flag: "🇦🇺",
-    tagline: "Quality education with a high standard of living.",
+    tagline: "Globally ranked universities in cities known for their quality of life.",
     overview:
       "Australia combines internationally ranked universities with a high standard of living, making it a popular destination for students across a wide range of disciplines.",
     popularAreas: ["Engineering", "Healthcare", "Business", "Information Technology"],
@@ -97,7 +97,7 @@ export const destinations: Destination[] = [
     slug: "new-zealand",
     countryCode: "NZ",
     flag: "🇳🇿",
-    tagline: "Safe, scenic, and research-driven education system.",
+    tagline: "Small classes and research-led universities in a consistently safe country.",
     overview:
       "New Zealand offers a safe environment, a research-oriented education system, and a close-knit international student community across its universities.",
     popularAreas: ["Agriculture Sciences", "Business", "Engineering", "Environmental Studies"],
@@ -116,7 +116,7 @@ export const destinations: Destination[] = [
     slug: "germany",
     countryCode: "DE",
     flag: "🇩🇪",
-    tagline: "Strong engineering focus with low-cost public universities.",
+    tagline: "Low or no tuition at many public universities, with deep engineering roots.",
     overview:
       "Germany is well regarded for engineering and applied sciences, with many public universities offering low or no tuition fees for eligible programs.",
     popularAreas: ["Mechanical Engineering", "Automotive Engineering", "Computer Science", "Renewable Energy"],
@@ -135,7 +135,7 @@ export const destinations: Destination[] = [
     slug: "ireland",
     countryCode: "IE",
     flag: "🇮🇪",
-    tagline: "English-speaking gateway to Europe with a growing tech sector.",
+    tagline: "English-taught degrees near the European offices of global tech companies.",
     overview:
       "Ireland offers English-taught programs, a growing technology and pharmaceutical industry presence, and a compact, welcoming higher education system.",
     popularAreas: ["Computer Science", "Pharmaceutical Sciences", "Business", "Data Analytics"],
@@ -154,9 +154,9 @@ export const destinations: Destination[] = [
     slug: "france",
     countryCode: "FR",
     flag: "🇫🇷",
-    tagline: "Rich academic tradition with growing English-taught programs.",
+    tagline: "Grandes écoles and a growing list of English-taught programs.",
     overview:
-      "France combines a rich academic tradition with an increasing number of English-taught programs, particularly in business and specialized graduate schools.",
+      "France has a long academic tradition and an increasing number of English-taught programs, particularly in business and specialised graduate schools.",
     popularAreas: ["Business Management", "Fashion & Design", "Culinary Arts", "Engineering"],
     highlights: [
       "Renowned business and grande école institutions",
@@ -173,7 +173,7 @@ export const destinations: Destination[] = [
     slug: "italy",
     countryCode: "IT",
     flag: "🇮🇹",
-    tagline: "Historic universities with strengths in design and heritage fields.",
+    tagline: "Some of the world's oldest universities, strong in design and architecture.",
     overview:
       "Italy is home to some of the world's oldest universities, with particular strengths in design, architecture, and cultural heritage-related programs.",
     popularAreas: ["Architecture", "Design", "Fine Arts", "Business"],
@@ -189,7 +189,7 @@ export const destinations: Destination[] = [
     slug: "netherlands",
     countryCode: "NL",
     flag: "🇳🇱",
-    tagline: "Highly ranked, English-taught programs across disciplines.",
+    tagline: "A wide choice of English-taught programs at highly ranked universities.",
     overview:
       "The Netherlands offers a large number of English-taught programs at highly ranked universities, with a practical, research-oriented teaching style.",
     popularAreas: ["Business & Economics", "Engineering", "Environmental Science", "Data Science"],
@@ -205,9 +205,9 @@ export const destinations: Destination[] = [
     slug: "sweden",
     countryCode: "SE",
     flag: "🇸🇪",
-    tagline: "Innovation-focused education with a strong quality of life.",
+    tagline: "English-taught master's with a focus on sustainability and design.",
     overview:
-      "Sweden is recognized for its innovation-driven education system, sustainability focus, and high overall quality of life for international students.",
+      "Sweden is recognised for its innovation-driven education system, sustainability focus, and high overall quality of life for international students.",
     popularAreas: ["Sustainable Engineering", "Design", "Information Technology", "Business"],
     highlights: [
       "Strong focus on innovation and sustainability",
@@ -221,9 +221,9 @@ export const destinations: Destination[] = [
     slug: "singapore",
     countryCode: "SG",
     flag: "🇸🇬",
-    tagline: "Asia's global education and business hub.",
+    tagline: "Globally ranked universities a short flight from India.",
     overview:
-      "Singapore combines globally ranked universities with proximity to India, strong industry connections, and a well-established international student ecosystem.",
+      "Singapore has globally ranked universities close to India, strong industry connections, and a large international student community.",
     popularAreas: ["Business Analytics", "Finance", "Engineering", "Information Technology"],
     highlights: [
       "Globally ranked universities in a major Asian financial hub",
@@ -237,12 +237,12 @@ export const destinations: Destination[] = [
     slug: "uae",
     countryCode: "AE",
     flag: "🇦🇪",
-    tagline: "Growing hub for international university campuses.",
+    tagline: "Branch campuses of international universities, close to home.",
     overview:
-      "The UAE hosts a growing number of international branch campuses and universities, offering globally recognized degrees within a shorter travel distance from India.",
+      "The UAE hosts a growing number of international branch campuses and universities, offering globally recognised degrees within a shorter travel distance from India.",
     popularAreas: ["Business", "Engineering", "Hospitality Management", "Information Technology"],
     highlights: [
-      "International branch campuses of globally recognized universities",
+      "International branch campuses of globally recognised universities",
       "Shorter travel distance and lower relative living costs",
       "Multicultural, business-oriented environment",
     ],
@@ -253,18 +253,25 @@ export const destinations: Destination[] = [
     slug: "malaysia",
     countryCode: "MY",
     flag: "🇲🇾",
-    tagline: "Affordable, quality education with international branch campuses.",
+    tagline: "International branch campuses at a lower overall cost.",
     overview:
       "Malaysia offers affordable tuition and living costs alongside branch campuses of well-known international universities, making it a practical entry point to global education.",
     popularAreas: ["Business", "Engineering", "Hospitality", "Information Technology"],
     highlights: [
-      "Branch campuses of recognized international universities",
+      "Branch campuses of recognised international universities",
       "Comparatively affordable tuition and living costs",
       "Culturally familiar and welcoming environment for Indian students",
     ],
     relatedServiceSlugs: ["study-abroad", "visa-assistance"],
   },
 ];
+
+/** "Study in the United Kingdom", not "Study in United Kingdom". */
+export function destinationNameInSentence(destination: Destination) {
+  return ["United States", "United Kingdom", "Netherlands", "UAE"].includes(destination.name)
+    ? `the ${destination.name}`
+    : destination.name;
+}
 
 export function getDestinationBySlug(slug: string) {
   return destinations.find((destination) => destination.slug === slug);

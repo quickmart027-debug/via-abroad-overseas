@@ -1,17 +1,13 @@
-"use client";
-
-import { motion, type Variants } from "motion/react";
 import { cn } from "@/lib/utils";
 
-const defaultVariants: Variants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
-  },
-};
-
+/**
+ * Scroll reveal as progressive enhancement. Content is fully visible in the
+ * server-rendered HTML; browsers that support scroll-driven animations
+ * (`animation-timeline: view()`) fade it up as it enters the viewport, and
+ * everything else — no JS, older browsers, reduced motion — simply shows
+ * it. No client JavaScript is involved, so these stay Server Components.
+ * See `.reveal` in app/globals.css.
+ */
 export function Reveal({
   children,
   className,
@@ -20,30 +16,20 @@ export function Reveal({
 }: {
   children: React.ReactNode;
   className?: string;
+  /** Seconds in the old motion API; mapped to a short scroll offset. */
   delay?: number;
   as?: "div" | "li";
 }) {
-  const Comp = motion[as];
+  const Comp = as;
   return (
     <Comp
-      className={cn(className)}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-80px" }}
-      variants={defaultVariants}
-      transition={{ delay }}
+      className={cn("reveal", className)}
+      style={delay ? ({ "--reveal-delay": Math.min(delay, 0.3) } as React.CSSProperties) : undefined}
     >
       {children}
     </Comp>
   );
 }
-
-export const staggerContainer: Variants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.09 },
-  },
-};
 
 export function StaggerGroup({
   children,
@@ -52,27 +38,8 @@ export function StaggerGroup({
   children: React.ReactNode;
   className?: string;
 }) {
-  return (
-    <motion.div
-      className={cn(className)}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-80px" }}
-      variants={staggerContainer}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={cn("reveal-stagger", className)}>{children}</div>;
 }
-
-export const staggerItem: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
-  },
-};
 
 export function StaggerItem({
   children,
@@ -81,9 +48,5 @@ export function StaggerItem({
   children: React.ReactNode;
   className?: string;
 }) {
-  return (
-    <motion.div className={cn(className)} variants={staggerItem}>
-      {children}
-    </motion.div>
-  );
+  return <div className={cn("reveal", className)}>{children}</div>;
 }

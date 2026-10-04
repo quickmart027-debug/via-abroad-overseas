@@ -75,20 +75,27 @@ lib/
 ## Data Flow: Public Form Submission
 
 1. Client form (`react-hook-form` + shared Zod schema) validates for UX.
-2. `POST /api/enquiries/{contact,consultation}` re-validates the same Zod
+2. `POST /api/enquiries/{contact,consultation,find-my-options}` rejects
+   oversized (413) and non-JSON (415) bodies, then re-validates the same Zod
    schema server-side — the client's validation result is never trusted.
 3. Honeypot field and submission-timing heuristics run first (cheap, no
    external calls).
-4. Two Upstash rate limits apply: a coarse per-fingerprint burst limit and
-   a stricter per-email+phone limit.
-5. Turnstile token is verified server-side against Cloudflare's API.
-6. The enquiry is inserted using the **secret-key** Supabase client
+4. Per-source Upstash limits: per-IP (IP only) and per-fingerprint (IP +
+   User-Agent).
+5. Turnstile token is verified server-side against Cloudflare's API,
+   including the hostname it was solved on.
+6. Per-recipient Upstash limits, only for verified requests: per-email and
+   per-email+phone.
+7. The enquiry is inserted using the **secret-key** Supabase client
    (the only code path allowed to bypass RLS), which is the source of
    truth for "did this submission succeed."
-7. Business notification + student confirmation emails are sent
+8. Business notification + student confirmation emails are sent
    best-effort via `Promise.allSettled` — a failure here is logged but
    never changes the HTTP response, because the lead is already safely
-   stored.
+   stored. Routing is env-driven (`lib/email/config.ts`): notifications go
+   to every address in `BUSINESS_NOTIFICATION_EMAIL` with Reply-To set to
+   the student; the student confirmation is only sent once
+   `RESEND_FROM_EMAIL` is on a verified domain (not `resend.dev`).
 
 ## Data Flow: Admin Dashboard
 

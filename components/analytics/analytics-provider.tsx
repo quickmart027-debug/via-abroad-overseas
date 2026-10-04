@@ -29,7 +29,23 @@ export function AnalyticsProvider() {
 
   React.useEffect(() => {
     window.__analyticsConsent = consent === "granted";
+    return () => {
+      window.__analyticsConsent = false;
+    };
   }, [consent]);
+
+  // This provider is mounted only by the (public) layout. If an already-loaded
+  // gtag outlives it (client navigation into /admin), GA's opt-out flag stops
+  // history-based page views from recording admin URLs, which can carry PII.
+  React.useEffect(() => {
+    if (!isAnalyticsConfigured) return;
+    const optOutFlag = `ga-disable-${gaMeasurementId}`;
+    const globals = window as unknown as Record<string, unknown>;
+    globals[optOutFlag] = false;
+    return () => {
+      globals[optOutFlag] = true;
+    };
+  }, []);
 
   function decide(next: "granted" | "denied") {
     setConsent(next);

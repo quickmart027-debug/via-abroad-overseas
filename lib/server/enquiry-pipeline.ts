@@ -1,9 +1,18 @@
 import "server-only";
 import { NextResponse } from "next/server";
 import { verifyTurnstileToken } from "@/lib/security/turnstile";
-import { formFingerprintLimiter, formContactLimiter } from "@/lib/rate-limit/limiter";
+import {
+  formFingerprintLimiter,
+  formContactLimiter,
+  formEmailLimiter,
+  formIpLimiter,
+} from "@/lib/rate-limit/limiter";
 import { hashRequestFingerprint, getClientIp } from "@/lib/security/fingerprint";
-import { deriveContactPairRateLimitKey } from "@/lib/rate-limit/contact-key";
+import {
+  deriveContactPairRateLimitKey,
+  deriveEmailRateLimitKey,
+  deriveIpRateLimitKey,
+} from "@/lib/rate-limit/contact-key";
 import { getAbuseHashSalt, RateLimitUnavailableError } from "@/lib/rate-limit/config";
 import { isHoneypotTripped, isSuspiciouslyFast, isFormStale } from "@/lib/security/spam-checks";
 import { insertEnquiry, type NewEnquiryRecord } from "@/lib/database/enquiries";
@@ -27,6 +36,20 @@ const SERVICE_UNAVAILABLE = {
   error: "Service temporarily unavailable. Please try again shortly.",
 };
 
+function tooManySubmissions() {
+  return NextResponse.json(
+    { error: "Too many submissions. Please wait a few minutes and try again." },
+    { status: 429 }
+  );
+}
+
+/** Fail closed: limiter/salt problems become a generic 503, never a pass. */
+function abuseProtectionUnavailable(error: unknown) {
+  const reason = error instanceof RateLimitUnavailableError ? error.reason : "fingerprint_unavailable";
+  console.error("[enquiry] Abuse protection unavailable.", { reason });
+  return NextResponse.json(SERVICE_UNAVAILABLE, { status: 503 });
+}
+
 export async function runEnquiryPipeline({
   request,
   honeypotValue,
@@ -49,28 +72,20 @@ export async function runEnquiryPipeline({
   const ip = getClientIp(request.headers);
   const userAgent = request.headers.get("user-agent") || "unknown";
   let fingerprint: string;
-  let fingerprintResult: Awaited<ReturnType<typeof formFingerprintLimiter.limit>>;
-  let contactResult: Awaited<ReturnType<typeof formContactLimiter.limit>>;
   try {
     fingerprint = await hashRequestFingerprint(ip, userAgent);
 
-    // 3. Distributed rate limiting — coarse fingerprint + stricter HMAC contact key.
-    const contactKey = deriveContactPairRateLimitKey(record.email, record.phone, getAbuseHashSalt());
-    [fingerprintResult, contactResult] = await Promise.all([
+    // 3. Cheap per-source limits first — per-IP (IP only, so rotating the
+    // User-Agent can't reset it) and per-fingerprint — so bots are turned
+    // away before we spend a Turnstile verification on them.
+    const ipKey = deriveIpRateLimitKey(ip, getAbuseHashSalt());
+    const [ipResult, fingerprintResult] = await Promise.all([
+      formIpLimiter.limit(ipKey),
       formFingerprintLimiter.limit(`fingerprint:v1:${fingerprint}`),
-      formContactLimiter.limit(contactKey),
     ]);
+    if (!ipResult.success || !fingerprintResult.success) return tooManySubmissions();
   } catch (error) {
-    const reason = error instanceof RateLimitUnavailableError ? error.reason : "fingerprint_unavailable";
-    console.error("[enquiry] Abuse protection unavailable.", { reason });
-    return NextResponse.json(SERVICE_UNAVAILABLE, { status: 503 });
-  }
-
-  if (!fingerprintResult.success || !contactResult.success) {
-    return NextResponse.json(
-      { error: "Too many submissions. Please wait a few minutes and try again." },
-      { status: 429 }
-    );
+    return abuseProtectionUnavailable(error);
   }
 
   // 4. Bot challenge — always re-verified server-side.
@@ -95,7 +110,21 @@ export async function runEnquiryPipeline({
     );
   }
 
-  // 5. Persist — the database insert is the source of truth for success.
+  // 5. Per-recipient limits, only after Turnstile passes, so requests with
+  // invalid tokens can't exhaust a victim's email/phone quota. The email-only
+  // HMAC key caps confirmation emails to one inbox whatever phone is paired.
+  try {
+    const salt = getAbuseHashSalt();
+    const [contactResult, emailResult] = await Promise.all([
+      formContactLimiter.limit(deriveContactPairRateLimitKey(record.email, record.phone, salt)),
+      formEmailLimiter.limit(deriveEmailRateLimitKey(record.email, salt)),
+    ]);
+    if (!contactResult.success || !emailResult.success) return tooManySubmissions();
+  } catch (error) {
+    return abuseProtectionUnavailable(error);
+  }
+
+  // 6. Persist — the database insert is the source of truth for success.
   let inserted: { id: string; created_at: string };
   try {
     inserted = await insertEnquiry({
@@ -108,10 +137,11 @@ export async function runEnquiryPipeline({
     return NextResponse.json(GENERIC_ERROR, { status: 500 });
   }
 
-  // 6. Notifications — best-effort, never block or fail the response.
+  // 7. Notifications — best-effort, never block or fail the response.
   // A failure here is logged for monitoring but the enquiry is already
   // safely stored, so the user still receives a genuine success response.
   const notifyPromise = sendBusinessNotificationEmail({
+    enquiryId: inserted.id,
     enquiryType: record.enquiry_type,
     fullName: record.full_name,
     phone: record.phone,
@@ -131,7 +161,13 @@ export async function runEnquiryPipeline({
     }
   });
 
-  const confirmPromise = sendStudentConfirmationEmail(record.email, record.full_name);
+  const confirmPromise = sendStudentConfirmationEmail(record.email).then(
+    (result) => {
+      if (!result.success && !result.skipped) {
+        console.error(`[enquiry] Student confirmation failed for enquiry ${inserted.id}.`);
+      }
+    }
+  );
 
   await Promise.allSettled([notifyPromise, confirmPromise]);
 

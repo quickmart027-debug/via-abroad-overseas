@@ -3,8 +3,8 @@ import { Reveal } from "@/components/motion/reveal";
 import { ConsultationCtaLink } from "@/components/analytics/consultation-cta-link";
 
 export function ConsultationCtaBanner({
-  title = "Ready to Start Your Study Abroad Journey?",
-  description = "Book your FREE consultation with our experts today.",
+  title = "Not sure what to do next?",
+  description = "Book a free consultation. We will look at your profile and tell you where you stand.",
   source = "consultation_cta_banner",
 }: {
   title?: string;

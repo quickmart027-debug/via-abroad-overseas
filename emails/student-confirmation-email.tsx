@@ -10,7 +10,12 @@ import {
 } from "@react-email/components";
 import { business } from "@/lib/config";
 
-export function StudentConfirmationEmail({ fullName }: { fullName: string }) {
+/**
+ * Deliberately addresses the recipient neutrally: this email goes to an
+ * address typed into a public form, so it must not echo any submitted
+ * content back (otherwise it could be used to relay text to third parties).
+ */
+export function StudentConfirmationEmail() {
   return (
     <Html>
       <Head />
@@ -18,11 +23,11 @@ export function StudentConfirmationEmail({ fullName }: { fullName: string }) {
       <Body style={{ fontFamily: "Arial, sans-serif", backgroundColor: "#f7f8fa", padding: "32px 0" }}>
         <Container style={{ backgroundColor: "#ffffff", borderRadius: 12, padding: 32, maxWidth: 560 }}>
           <Heading style={{ color: "#0b1f3a", fontSize: 20 }}>
-            Thank you, {fullName}
+            Thank you for your enquiry
           </Heading>
           <Text style={{ fontSize: 15, color: "#101828", lineHeight: 1.6 }}>
             We&rsquo;ve received your enquiry at {business.name}. One of our
-            counselors will review your details and reach out to you soon.
+            counsellors will review your details and reach out to you soon.
           </Text>
           <Text style={{ fontSize: 15, color: "#101828", lineHeight: 1.6 }}>
             In the meantime, if you have an urgent question, feel free to

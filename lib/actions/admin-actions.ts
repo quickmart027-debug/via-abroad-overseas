@@ -39,10 +39,10 @@ export async function updateEnquiryStatusAction(
       };
     }
 
-    console.error(
-      "[admin] Failed to update enquiry status:",
-      error instanceof Error ? error.message : "unknown error"
-    );
+    // Fixed message + id only: provider error text can contain row data.
+    console.error("[admin] Failed to update enquiry status.", {
+      enquiryId: parsed.data.enquiryId,
+    });
     return { success: false, error: "Could not update status. Please try again." };
   }
 
@@ -75,10 +75,7 @@ export async function addAdminNoteAction(input: unknown): Promise<ActionResult> 
       };
     }
 
-    console.error(
-      "[admin] Failed to add note:",
-      error instanceof Error ? error.message : "unknown error"
-    );
+    console.error("[admin] Failed to add note.", { enquiryId: parsed.data.enquiryId });
     return { success: false, error: "Could not save note. Please try again." };
   }
 

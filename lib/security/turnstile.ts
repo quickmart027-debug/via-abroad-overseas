@@ -22,39 +22,86 @@ type TurnstileSiteverifyResponse = {
   "error-codes"?: string[];
 };
 
+/** The env variables this module reads; a plain object so tests can pass one. */
+export type TurnstileEnv = {
+  NODE_ENV?: string;
+  VERCEL_ENV?: string;
+  NEXT_PUBLIC_SITE_URL?: string;
+  VERCEL_PROJECT_PRODUCTION_URL?: string;
+  VERCEL_URL?: string;
+  VERCEL_BRANCH_URL?: string;
+  ALLOW_UNVERIFIED_TURNSTILE_IN_DEV?: string;
+};
+
 const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1"]);
 
-function isProductionRuntime(env: NodeJS.ProcessEnv = process.env) {
+/**
+ * A Vercel production deployment always sets `VERCEL_ENV=production`, and
+ * every Vercel deployment (preview included) runs with
+ * `NODE_ENV=production`, so either one marks a non-local runtime.
+ */
+function isProductionRuntime(env: TurnstileEnv = process.env): boolean {
   return env.NODE_ENV === "production" || env.VERCEL_ENV === "production";
 }
 
-function getExpectedHostname(env: NodeJS.ProcessEnv = process.env): string | null {
-  const canonicalUrl = env.NEXT_PUBLIC_SITE_URL?.trim();
-  const vercelProductionUrl = env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
-  const configuredValue = canonicalUrl || vercelProductionUrl;
-  if (!configuredValue) return null;
+function normalizeHostname(value: string): string {
+  return value.trim().toLowerCase().replace(/\.$/, "");
+}
 
+/** Extracts a bare hostname from a URL or naked host (`Example.com/path`). */
+function hostOf(value: string | undefined): string | null {
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
   try {
-    const parsed = new URL(
-      configuredValue.includes("://") ? configuredValue : `https://${configuredValue}`
-    );
+    const parsed = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`);
     if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return null;
     if (parsed.username || parsed.password || !parsed.hostname) return null;
-    return parsed.hostname.toLowerCase();
+    return normalizeHostname(parsed.hostname);
   } catch {
     return null;
   }
 }
 
-function hostnameMatches(
-  receivedHostname: unknown,
-  expectedHostname: string,
-  env: NodeJS.ProcessEnv = process.env
+/**
+ * The exact hostnames a Turnstile token may have been solved on:
+ * - the canonical site host (`NEXT_PUBLIC_SITE_URL`) and the Vercel
+ *   production domain (`VERCEL_PROJECT_PRODUCTION_URL`);
+ * - on a Vercel *preview* deployment only, that deployment's own hosts
+ *   (`VERCEL_URL`, `VERCEL_BRANCH_URL`) — never arbitrary `*.vercel.app`
+ *   hosts, and never any preview host on the production deployment;
+ * - outside production runtimes only, with nothing configured, `localhost`.
+ * A loopback host is never a valid configured host in production, so a
+ * production build pointed at localhost yields an empty list (fail closed).
+ */
+export function getAllowedTurnstileHostnames(env: TurnstileEnv = process.env): string[] {
+  const production = isProductionRuntime(env);
+  const candidates = [hostOf(env.NEXT_PUBLIC_SITE_URL), hostOf(env.VERCEL_PROJECT_PRODUCTION_URL)];
+  if (env.VERCEL_ENV === "preview") {
+    candidates.push(hostOf(env.VERCEL_URL), hostOf(env.VERCEL_BRANCH_URL));
+  }
+  const hosts = candidates.filter(
+    (host): host is string => host !== null && !(production && LOCAL_HOSTNAMES.has(host))
+  );
+  if (hosts.length === 0 && !production) hosts.push("localhost");
+  return [...new Set(hosts)];
+}
+
+/**
+ * Checks the `hostname` Siteverify reports the token was solved on, so a
+ * token minted on some other site using our (public) site key is rejected.
+ * Accepted: an exact match against `getAllowedTurnstileHostnames()`, plus
+ * loopback hosts outside production runtimes. Anything else — including a
+ * missing hostname — fails closed.
+ */
+export function isAllowedTurnstileHostname(
+  hostname: unknown,
+  env: TurnstileEnv = process.env
 ): boolean {
-  if (typeof receivedHostname !== "string") return false;
-  const normalized = receivedHostname.trim().toLowerCase();
-  if (normalized === expectedHostname) return true;
-  return !isProductionRuntime(env) && LOCAL_HOSTNAMES.has(normalized);
+  if (typeof hostname !== "string") return false;
+  const host = normalizeHostname(hostname);
+  if (!host) return false;
+  if (LOCAL_HOSTNAMES.has(host)) return !isProductionRuntime(env);
+  return getAllowedTurnstileHostnames(env).includes(host);
 }
 
 /**
@@ -72,52 +119,41 @@ function hostnameMatches(
  * unverified form because of this development variable. Kept as a pure
  * function of its env input so the invariant is directly unit-tested.
  */
-export function isDevTurnstileBypassAllowed(
-  env: {
-    NODE_ENV?: string;
-    VERCEL_ENV?: string;
-    ALLOW_UNVERIFIED_TURNSTILE_IN_DEV?: string;
-  } = process.env
-): boolean {
-  const isProductionRuntime =
-    env.NODE_ENV === "production" || env.VERCEL_ENV === "production";
-  return (
-    !isProductionRuntime && env.ALLOW_UNVERIFIED_TURNSTILE_IN_DEV === "true"
-  );
+export function isDevTurnstileBypassAllowed(env: TurnstileEnv = process.env): boolean {
+  return !isProductionRuntime(env) && env.ALLOW_UNVERIFIED_TURNSTILE_IN_DEV === "true";
 }
 
 /**
  * Verifies a Turnstile token server-side. The client-side widget alone is
  * never trusted — every form submission is re-checked here before any
- * database write happens.
+ * database write happens. A token passes only if Siteverify reports
+ * success AND it was solved on an allowed hostname AND for the endpoint's
+ * expected action. The provider call times out after 8 seconds.
  *
- * In local development, when Turnstile configuration is missing, this
- * fails closed UNLESS explicitly relaxed via
- * ALLOW_UNVERIFIED_TURNSTILE_IN_DEV=true, so contributors can exercise the
- * rest of the form flow without provisioning real Turnstile keys.
+ * When Turnstile configuration (secret key or an allowed hostname) is
+ * missing, this fails closed with `configuration_missing` UNLESS explicitly
+ * relaxed outside production via ALLOW_UNVERIFIED_TURNSTILE_IN_DEV=true, so
+ * contributors can exercise the rest of the form flow without provisioning
+ * real Turnstile keys. Provider failures never log the token or details.
  */
-export async function verifyTurnstileToken(
-  input: { token: string; expectedAction: string; remoteIp?: string }
-): Promise<TurnstileVerification> {
+export async function verifyTurnstileToken(input: {
+  token: string;
+  expectedAction: string;
+  remoteIp?: string;
+}): Promise<TurnstileVerification> {
   const { token, expectedAction, remoteIp } = input;
   if (!token) return { valid: false, reason: "missing_token" };
 
-  const expectedHostname = getExpectedHostname();
-  const localHostnameInProduction =
-    isProductionRuntime() && expectedHostname !== null && LOCAL_HOSTNAMES.has(expectedHostname);
-  if (!process.env.TURNSTILE_SECRET_KEY || !expectedHostname || localHostnameInProduction) {
-    if (
-      !isProductionRuntime() &&
-      isDevTurnstileBypassAllowed()
-    ) {
-      return { valid: true };
-    }
-    return { valid: false, reason: "configuration_missing" };
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+  if (!secret || getAllowedTurnstileHostnames().length === 0) {
+    return isDevTurnstileBypassAllowed()
+      ? { valid: true }
+      : { valid: false, reason: "configuration_missing" };
   }
 
   try {
     const formData = new URLSearchParams();
-    formData.set("secret", process.env.TURNSTILE_SECRET_KEY!);
+    formData.set("secret", secret);
     formData.set("response", token);
     if (remoteIp) formData.set("remoteip", remoteIp);
 
@@ -137,7 +173,7 @@ export async function verifyTurnstileToken(
           : "provider_rejected",
       };
     }
-    if (!hostnameMatches(result.hostname, expectedHostname)) {
+    if (!isAllowedTurnstileHostname(result.hostname)) {
       return { valid: false, reason: "hostname_mismatch" };
     }
     if (result.action !== expectedAction) return { valid: false, reason: "action_mismatch" };

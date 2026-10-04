@@ -7,15 +7,15 @@ import {
   Infinity as InfinityIcon,
 } from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { Eyebrow } from "@/components/ui/eyebrow";
 import { Reveal } from "@/components/motion/reveal";
+import { ConsultationCtaLink } from "@/components/analytics/consultation-cta-link";
 
 const benefits = [
   {
     number: "01",
     title: "Profile First",
     icon: UserRound,
-    description: "We start with your academics, budget, and goals — not a generic shortlist.",
+    description: "We look at your marks, budget and goals before naming a single university.",
   },
   {
     number: "02",
@@ -54,8 +54,7 @@ export function WhyChooseSection() {
     <section className="bg-surface py-20 md:py-28">
       <Container>
         <Reveal className="mx-auto max-w-2xl text-center">
-          <Eyebrow className="justify-center">Why Via Abroad</Eyebrow>
-          <h2 className="mt-4 text-balance font-display text-[clamp(1.75rem,3.5vw,2.75rem)] font-semibold text-navy-900">
+          <h2 className="text-balance font-display text-[clamp(1.75rem,3.5vw,2.75rem)] font-semibold text-navy-900">
             Why students choose Via Abroad
           </h2>
           <p className="mt-4 text-ink-muted">
@@ -90,6 +89,12 @@ export function WhyChooseSection() {
             );
           })}
         </div>
+
+        <Reveal className="mt-12 flex justify-center">
+          <ConsultationCtaLink source="home_why" size="lg" variant="outlineNavy">
+            Talk to a Counsellor
+          </ConsultationCtaLink>
+        </Reveal>
       </Container>
     </section>
   );

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <>
-      <PageHero eyebrow="Legal" title="Terms and Conditions" breadcrumb={[{ label: "Terms and Conditions" }]} />
+      <PageHero title="Terms and Conditions" breadcrumb={[{ label: "Terms and Conditions" }]} />
       <section className="bg-surface py-16 md:py-24">
         <Container className="prose prose-slate max-w-3xl prose-headings:font-display prose-headings:text-navy-900 prose-a:text-gold-700">
           <p className="text-sm text-ink-faint">Last updated: this policy is pending final legal review before launch.</p>
@@ -25,9 +25,9 @@ export default function TermsPage() {
 
           <h2>Nature of Our Services</h2>
           <p>
-            VIA ABROAD OVERSEAS provides study abroad counseling, university
+            VIA ABROAD OVERSEAS provides study abroad counselling, university
             admissions guidance, visa application support, career
-            counseling, and related advisory services. We do not represent
+            counselling, and related advisory services. We do not represent
             any government immigration authority, and we are not a
             university or degree-granting institution.
           </p>
@@ -48,7 +48,7 @@ export default function TermsPage() {
             and current, university requirements, visa policies, and
             program details change over time. You should always verify
             current requirements with official sources and your assigned
-            counselor before making decisions.
+            counsellor before making decisions.
           </p>
 
           <h2>User Conduct</h2>

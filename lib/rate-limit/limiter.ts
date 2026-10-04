@@ -121,7 +121,9 @@ export function createRateLimiter(
 
 export const rateLimitPolicy = {
   fingerprint: { requests: 5, window: "10 m" },
+  ip: { requests: 10, window: "10 m" },
   contactPair: { requests: 3, window: "1 h" },
+  email: { requests: 3, window: "1 h" },
 } as const;
 
 /** Per-fingerprint burst limit: 5 submissions per 10 minutes. */
@@ -134,6 +136,27 @@ export const formFingerprintLimiter = createRateLimiter(
 export const formContactLimiter = createRateLimiter(
   rateLimitPolicy.contactPair.requests,
   rateLimitPolicy.contactPair.window
+);
+
+/**
+ * Per-IP limit: 10 submissions per 10 minutes, keyed on the client IP alone
+ * (IPv6 grouped by /64). Looser than the fingerprint limit so a shared
+ * office/college NAT isn't blocked, but it can't be reset by changing the
+ * User-Agent.
+ */
+export const formIpLimiter = createRateLimiter(
+  rateLimitPolicy.ip.requests,
+  rateLimitPolicy.ip.window
+);
+
+/**
+ * Per-email limit: 3 submissions per hour, keyed on the HMAC of the
+ * normalized email alone. Caps confirmation emails to any one inbox no
+ * matter which phone number is paired with it.
+ */
+export const formEmailLimiter = createRateLimiter(
+  rateLimitPolicy.email.requests,
+  rateLimitPolicy.email.window
 );
 
 /** Safe runtime status for health/preflight checks; it contains no secrets. */

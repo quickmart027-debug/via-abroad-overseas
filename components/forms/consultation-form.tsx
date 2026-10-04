@@ -19,29 +19,27 @@ import { getStoredUtmAttribution } from "@/lib/analytics/utm";
 import { isTurnstileConfigured } from "@/lib/config";
 
 const countryOptions = [...destinations.map((d) => d.name), "Other"];
-const qualificationOptions = ["High School", "Undergraduate", "Graduate", "Postgraduate", "Other"];
+const qualificationOptions = ["12th / Intermediate", "Pursuing bachelor's", "Completed bachelor's", "Master's degree", "Other"];
 
 export function ConsultationForm() {
   const [submitted, setSubmitted] = React.useState(false);
   const [startedTracked, setStartedTracked] = React.useState(false);
-  const formRenderedAt = React.useRef(Date.now());
+  const [formRenderedAt] = React.useState(() => Date.now());
 
   const {
     register,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<ConsultationFormInput>({
     resolver: zodResolver(consultationFormSchema),
     defaultValues: {
-      formRenderedAt: formRenderedAt.current,
+      formRenderedAt,
       turnstileToken: isTurnstileConfigured ? "" : "turnstile-not-configured",
       consent: false as unknown as true,
     },
   });
 
-  const consent = watch("consent");
 
   function trackStart() {
     if (startedTracked) return;
@@ -56,7 +54,6 @@ export function ConsultationForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...data,
-          [HONEYPOT_FIELD]: "",
           ...getStoredUtmAttribution(),
           source_path: window.location.pathname,
         }),
@@ -80,7 +77,8 @@ export function ConsultationForm() {
       <div className="flex flex-col items-center gap-4 rounded-2xl border border-success-bg bg-success-bg px-6 py-12 text-center" role="status" aria-live="polite">
         <CheckCircle2 className="h-10 w-10 text-success" aria-hidden="true" />
         <p className="max-w-sm text-success">
-          Thank you! Our counselor will contact you soon.
+          Thanks, your consultation request is in. A counsellor will call you
+          on the number you gave to arrange a time.
         </p>
       </div>
     );
@@ -90,7 +88,7 @@ export function ConsultationForm() {
     <form onSubmit={handleSubmit(onSubmit)} onFocus={trackStart} className="flex flex-col gap-5" noValidate>
       <div className="absolute left-[-9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
         <label htmlFor={HONEYPOT_FIELD}>Company Website</label>
-        <input id={HONEYPOT_FIELD} name={HONEYPOT_FIELD} type="text" tabIndex={-1} autoComplete="off" />
+        <input id={HONEYPOT_FIELD} type="text" tabIndex={-1} autoComplete="off" {...register(HONEYPOT_FIELD)} />
       </div>
 
       <Field label="Name" htmlFor="fullName" required error={errors.fullName?.message}>
@@ -172,7 +170,7 @@ export function ConsultationForm() {
         </p>
       )}
 
-      <Button type="submit" size="lg" disabled={isSubmitting || !consent} className="mt-2">
+      <Button type="submit" size="lg" disabled={isSubmitting} className="mt-2">
         {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
         Book Free Consultation
       </Button>

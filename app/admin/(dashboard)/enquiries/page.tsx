@@ -18,13 +18,16 @@ export default async function AdminEnquiriesPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  // Authorize before touching any request input.
+  const { supabase } = await requireAdmin();
+
   const rawParams = await searchParams;
   const flatParams = Object.fromEntries(
     Object.entries(rawParams).map(([key, value]) => [key, Array.isArray(value) ? value[0] : value])
   );
-  const filters = enquiryFiltersSchema.parse(flatParams);
-
-  const { supabase } = await requireAdmin();
+  // Hand-edited or stale query params fall back to the default view, not a 500.
+  const parsedFilters = enquiryFiltersSchema.safeParse(flatParams);
+  const filters = parsedFilters.success ? parsedFilters.data : enquiryFiltersSchema.parse({});
   const { rows, total } = await listEnquiries(supabase, filters);
   const totalPages = Math.max(1, Math.ceil(total / filters.pageSize));
 
